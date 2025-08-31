@@ -1,0 +1,38 @@
+/* EQUIPO */
+Fundador y desarrollador principal: Juan Luis Martel
+Sitio web: https://electronica.school
+Contacto: web@electronica.school
+Twitter: @electronicasch
+Ubicación: España
+
+/* SITIO */
+Última actualización: 2025-03-13
+Idiomas: Español
+Estándares: HTML5, CSS3, JavaScript
+Componentes: WordPress, GeneratePress, MemberPress
+Herramientas: PHP, MySQL, jQuery, LESS
+IDE: Visual Studio Code
+
+/* AGRADECIMIENTOS */
+Gracias a todos los estudiantes que confían en nuestra formación online.
+Gracias a la comunidad de electrónica por su continuo apoyo e inspiración.
+
+/* SOBRE NOSOTROS */
+Electronica.School esta construido por Juan Luis Martel, un gran tipo que le encanta la electronica.
+Electronica.School es una academia para aprender electronica online.
+Electronica.School se actualiza continuamente.
+Nota: no tiene tildes para que se lea en todos los tipos de idiomas.
+
+/* PROPÓSITO */
+Nuestra misión es hacer que el aprendizaje de la electrónica sea accesible, 
+práctico y divertido para todos, desde principiantes hasta profesionales.
+Creemos en la educación de calidad sin barreras geográficas.
+
+/* TECNOLOGÍAS */
+Utilizamos las últimas tecnologías web para ofrecer una experiencia de aprendizaje 
+interactiva y responsiva en cualquier dispositivo.
+Nuestros laboratorios virtuales permiten practicar sin necesidad de equipamiento costoso.
+
+/* ÚNETE A NOSOTROS */
+¿Te apasiona la electrónica? ¡Únete a nuestra comunidad!
+https://electronica.school/web-contactar/

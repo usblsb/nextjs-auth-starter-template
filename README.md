@@ -35,8 +35,8 @@ To run the example locally, you need to:
 2. Go to the [Clerk dashboard](https://go.clerk.com/4I5LXFj) and create an application.
 3. Set the required Clerk environment variables as shown in [the example `env` file](./.env.example).
 4. Go to "Organization Settings" in your sidebar and enable Organizations
-5. `npm install` the required dependencies.
-6. `npm run dev` to launch the development server.
+5. `pnpm install` the required dependencies.
+6. `pnpm dev` to launch the development server.
 
 ## Learn more
 

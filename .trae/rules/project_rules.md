@@ -1,3 +1,3 @@
 # Reglas del Proyecto.
 
-Usa npm
+Usa solo pnpm para instalar las dependencias y ejecutar el proyecto ejemplo: `pnpm dev`.

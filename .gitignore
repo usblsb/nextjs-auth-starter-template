@@ -5,6 +5,12 @@
 /.pnp
 .pnp.js
 
+# pnpm
+pnpm-lock.yaml*
+.pnpm-debug.log*
+
+
+
 # testing
 /coverage
 
@@ -42,5 +48,6 @@ next-env.d.ts
 config
 reglas_llm
 vscode
-
+.trae
 #
+
