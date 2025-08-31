@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import Header1 from "@/components/blocks/headers/header1";
-import Footer1 from "@/components/blocks/footers/footer1";
+import Header from "../../_template/components/header";
+import { Footer } from "../../_template/components/footer";
 import "@/styles/pages-footer.css";
 import { contenidoPagesFooter } from "./contenido";
 
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function PaginaFooter() {
 	return (
 		<div className="flex flex-col min-h-screen">
-			<Header1 />
+			<Header />
 			<main className="flex-1">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -44,7 +44,7 @@ export default function PaginaFooter() {
 					</div>
 				</div>
 			</main>
-			<Footer1 />
+			<Footer />
 		</div>
 	);
 }

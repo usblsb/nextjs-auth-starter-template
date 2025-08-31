@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import Header1 from "@/components/blocks/headers/header1";
-import Footer1 from "@/components/blocks/footers/footer1";
+import Header from "../../_template/components/header";
+import { Footer } from "../../_template/components/footer";
 import "@/styles/pages-footer.css";
 import { contenidoPagesFooter } from "./contenido";
 
@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function PaginaFooter() {
 	return (
 		<div className="flex flex-col min-h-screen">
-			<Header1 />
+			<Header />
 			<main className="flex-1">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="lg:grid lg:grid-cols-12 lg:gap-8">
@@ -43,7 +43,7 @@ export default function PaginaFooter() {
 					</div>
 				</div>
 			</main>
-			<Footer1 />
+			<Footer />
 		</div>
 	);
 }
@@ -54,7 +54,7 @@ INSTRUCCIONES PARA EL LLM:
 1. Reemplazar [TÍTULO DE LA PÁGINA] con el título específico
 2. Reemplazar [DESCRIPCIÓN DE LA PÁGINA] con la descripción específica
 3. Importar el contenido desde un archivo separado (contenido.tsx)
-4. Mantener la estructura de layout con Header1 y Footer1
+4. Mantener la estructura de layout con Header y Footer
 5. Conservar las clases CSS y la estructura responsive
 6. Asegurar que los metadatos tengan robots noindex/nofollow
 7. El archivo de contenido debe exportar una constante llamada 'contenidoPagesFooter'

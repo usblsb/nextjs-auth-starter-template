@@ -50,4 +50,6 @@ reglas_llm
 vscode
 .trae
 #
+*.bak
 
+.copias-en-zip-del-proyecto
