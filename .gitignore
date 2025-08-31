@@ -37,3 +37,10 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Carpetas de reglas de mis LLM y ajustes de configuración
+config
+reglas_llm
+vscode
+
+#
