@@ -1,0 +1,50 @@
+import { Metadata } from "next";
+import Header1 from "@/components/blocks/headers/header1";
+import Footer1 from "@/components/blocks/footers/footer1";
+import "@/styles/pages-footer.css";
+import { contenidoPagesFooter } from "./contenido";
+
+export async function generateMetadata(): Promise<Metadata> {
+	const title = "Contactar | Electrónica School";
+	const description =
+		"Ponte en contacto con nosotros para resolver tus dudas sobre nuestros cursos.";
+
+	return {
+		title,
+		description,
+		openGraph: {
+			title,
+			description,
+			type: "website",
+		},
+		robots: {
+			index: false,
+			follow: false,
+			noarchive: true,
+			nocache: true,
+			nosnippet: true,
+			noimageindex: true,
+			notranslate: true,
+		},
+	};
+}
+
+export default function PaginaFooter() {
+	return (
+		<div className="flex flex-col min-h-screen">
+			<Header1 />
+			<main className="flex-1">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="lg:grid lg:grid-cols-12 lg:gap-8">
+						<div className="lg:col-span-12">
+							<div className="mt-8 max-w-4xl mx-auto text-left space-y-6">
+								{contenidoPagesFooter}
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+			<Footer1 />
+		</div>
+	);
+}

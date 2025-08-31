@@ -1,0 +1,39 @@
+Quiero que en el footer añadas estos enlaces que abren unas paginas que ya tengo
+creadas:
+## Importante: Los enlaces del footer todos son rel="noopener noreferrer nofollow"
+---
+Nombre: Enlace
+---
+Política de privacidad: /web-politica-privacidad
+app/(pages-footer)/web-aviso-legal
+---
+Aviso Legal: /web-aviso-legal
+app/(pages-footer)/web-aviso-legal
+---
+Condiciones de Venta y Uso: /web-condiciones-venta
+app/(pages-footer)/web-condiciones-venta
+---
+Política de Cookies: /web-politica-cookies
+app/(pages-footer)/web-politica-cookies
+---
+Faq: /web-preguntas-frecuentes
+app/(pages-footer)/web-preguntas-frecuentes
+---
+Requisitos técnicos: /web-requisitos-tecnicos
+app/(pages-footer)/web-requisitos-tecnicos
+---
+Blog: (SIN ENLACE SOLO PONE EL TEXTO)
+---
+Contactar: /web-contactar
+app/(pages-footer)/web-contactar
+---
+Ajustar Cookies: /#ajustar-cookies
+No enlaza a una pagina es solo un link 
+http://localhost:3000/#ajustar-cookies
+---
+
+Despues de los enlaces del menu del footer, debes de poner centrado el texto del
+copyright:
+
+© 2020 - 2026 Cursos para Aprender Electrónica y Robótica Educativa.
+---
