@@ -22,6 +22,12 @@ export default function Header() {
 							<span className="text-sm text-gray-600">
 								Hola, {user?.firstName || user?.emailAddresses[0]?.emailAddress}
 							</span>
+							<Link
+								href="/web-dashboard"
+								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+							>
+								Mi Cuenta
+							</Link>
 							<button
 								onClick={() => signOut()}
 								className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
