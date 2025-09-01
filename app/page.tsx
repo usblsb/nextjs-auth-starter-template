@@ -36,7 +36,9 @@ export default function Home() {
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 						<div className="lg:grid lg:grid-cols-12 lg:gap-8">
 							<div className="lg:col-span-12">
-								<div className="mt-8 max-w-4xl mx-auto text-left space-y-6"></div>
+								<div className="mt-8 max-w-4xl mx-auto text-left space-y-6">
+									{/* Este es el lugar donde se muestra el contenido */}
+								</div>
 							</div>
 						</div>
 					</div>

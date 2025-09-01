@@ -15,7 +15,7 @@ export default function Header() {
 						ELECTRÓNICA SCHOOL
 					</span>
 				</Link>
-				
+
 				<div className="flex items-center space-x-4">
 					{isSignedIn ? (
 						<>
