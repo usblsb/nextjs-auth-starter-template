@@ -1,6 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Appearance } from "@clerk/nextjs";
 import "./globals.css";
+import "../styles/pages-dashboard.css";
 import Script from "next/script";
 import localFont from "next/font/local";
 import { templateMetadata } from "./_template/content/metadata";
@@ -33,7 +33,7 @@ const clerkAppearanceObject = {
 			"bg-black border border-black border-solid hover:bg-white hover:text-black",
 		card: "bg-[#fafafa]",
 	},
-} satisfies Appearance;
+};
 
 export default function RootLayout({
 	children,
