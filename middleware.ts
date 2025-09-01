@@ -3,12 +3,15 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 // Definir las rutas que requieren autenticación
 // Solo la ruta /dashboard y sus subrutas necesitan login
 const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
 
 // Middleware de Clerk que maneja la autenticación
 export default clerkMiddleware(async (auth, req) => {
 	// Solo proteger las rutas definidas en isProtectedRoute
 	// Todas las demás rutas son públicas (incluyendo /, /sign-in, /sign-out, etc.)
-	if (isProtectedRoute(req)) await auth.protect();
+	if (isProtectedRoute(req) && !isPublicRoute(req)) {
+		await auth.protect();
+	}
 });
 
 // Configuración del matcher para definir en qué rutas se ejecuta el middleware

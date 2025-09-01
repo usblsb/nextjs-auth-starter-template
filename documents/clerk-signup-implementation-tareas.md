@@ -1,17 +1,21 @@
 # Implementación de Funcionalidad Sign-Up - Plan de Tareas
 
 ## Objetivo General
+
 Implementar una página independiente de registro (sign-up) con integración completa en el header de la aplicación, siguiendo las mejores prácticas de Clerk y manteniendo consistencia visual con el resto de la aplicación.
 
 ## Fase 1: Análisis y Preparación
 
 ### Tareas:
+
 1. **Revisar estructura actual del proyecto**
+
    - Analizar la implementación existente de sign-in
    - Verificar configuración actual de Clerk
    - Documentar dependencias y componentes relacionados
 
 2. **Crear backups de seguridad**
+
    - Backup del header actual
    - Backup del middleware.ts
    - Backup del archivo .env.example
@@ -23,11 +27,14 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 2: Creación de la Página Sign-Up
 
 ### Tareas:
+
 1. **Crear estructura de directorios**
+
    - Crear carpeta `app/sign-up/[[...sign-up]]/`
    - Preparar archivo `page.tsx` para el componente SignUp
 
 2. **Implementar componente SignUp**
+
    - Importar `SignUp` de `@clerk/nextjs`
    - Aplicar la misma estructura de layout que sign-in y página principal
    - Integrar Header y Footer para consistencia visual
@@ -41,7 +48,9 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 3: Actualización del Middleware
 
 ### Tareas:
+
 1. **Modificar middleware.ts**
+
    - Añadir ruta `/sign-up(.*)` como ruta pública
    - Actualizar el `createRouteMatcher` para incluir sign-up
    - Verificar que la lógica de protección funcione correctamente
@@ -55,7 +64,9 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 4: Configuración de Variables de Entorno
 
 ### Tareas:
+
 1. **Actualizar .env.example**
+
    - Añadir `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up`
    - Añadir `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/`
    - Verificar que las variables de sign-in existentes sean compatibles
@@ -68,12 +79,15 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 5: Implementación de Botón Sign-Up en Header
 
 ### Tareas:
+
 1. **Modificar componente Header**
+
    - Añadir botón "Registrarse" junto al botón "Iniciar Sesión"
    - Implementar lógica condicional para mostrar/ocultar botones según estado de autenticación
    - Aplicar estilos consistentes con el botón de sign-in existente
 
 2. **Optimizar UX del Header**
+
    - Asegurar que los botones tengan buen espaciado y alineación
    - Implementar estados hover y focus apropiados
    - Verificar comportamiento en dispositivos móviles
@@ -86,13 +100,16 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 6: Testing y Verificación
 
 ### Tareas:
+
 1. **Testing funcional**
+
    - Probar flujo completo de registro desde el header
    - Verificar que la página de sign-up cargue correctamente
    - Confirmar que el proceso de registro funcione end-to-end
    - Probar redirecciones después del registro exitoso
 
 2. **Testing de UI/UX**
+
    - Verificar consistencia visual en todas las páginas
    - Probar responsive design en diferentes tamaños de pantalla
    - Confirmar que los botones del header funcionen correctamente
@@ -106,12 +123,15 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Fase 7: Documentación y Finalización
 
 ### Tareas:
+
 1. **Actualizar documentación**
+
    - Actualizar README.md con información sobre sign-up
    - Documentar nuevas variables de entorno
    - Crear guía de uso para desarrolladores
 
 2. **Limpieza y optimización**
+
    - Revisar código para eliminar duplicaciones
    - Optimizar imports y dependencias
    - Verificar que no haya archivos temporales o innecesarios
@@ -124,11 +144,13 @@ Implementar una página independiente de registro (sign-up) con integración com
 ## Consideraciones Técnicas
 
 ### Dependencias:
+
 - `@clerk/nextjs` (ya instalado)
 - Next.js con App Router (ya configurado)
 - Tailwind CSS (ya configurado)
 
 ### Archivos a Modificar:
+
 - `app/sign-up/[[...sign-up]]/page.tsx` (nuevo)
 - `app/components/layouts/header.tsx` (modificar)
 - `middleware.ts` (modificar)
@@ -136,6 +158,7 @@ Implementar una página independiente de registro (sign-up) con integración com
 - `documents/` (documentación)
 
 ### Archivos de Backup:
+
 - `backup/header_[timestamp].tsx`
 - `backup/middleware_[timestamp].ts`
 - `backup/env.example_[timestamp]`
