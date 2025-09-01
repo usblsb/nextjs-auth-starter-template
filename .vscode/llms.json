@@ -1,0 +1,100 @@
+{
+  "llms": [
+    {
+      "id": "vscode",
+      "name": "Visual Studio Code",
+      "kind": "vscode-clone",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/",
+        "windows": "${workspaceFolder}/",
+        "linux": "${workspaceFolder}/"
+      },
+      "install": {
+        "method": "copy"
+      }
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "kind": "vscode-clone",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/.cursor/rules/",
+        "windows": "${workspaceFolder}/.cursor/rules/",
+        "linux": "${workspaceFolder}/.cursor/rules/"
+      },
+      "install": {
+        "method": "copy"
+      }
+    },
+    {
+      "id": "roo",
+      "name": "Roo Code",
+      "kind": "vscode-clone",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/.roo/",
+        "windows": "${workspaceFolder}/.roo/",
+        "linux": "${workspaceFolder}/.roo/"
+      },
+      "install": {
+        "method": "copy"
+      }
+    },
+    {
+      "id": "trae",
+      "name": "Trae",
+      "kind": "desktop",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/.trae/rules",
+        "windows": "${workspaceFolder}/.trae/rules",
+        "linux": "${workspaceFolder}/.trae/rules"
+      },
+      "install": {
+        "method": "copy"
+      }
+    },
+    {
+      "id": "kilocode",
+      "name": "KiloCode",
+      "kind": "desktop",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/.kilocode/rules/",
+        "windows": "${workspaceFolder}/.kilocode/rules/",
+        "linux": "${workspaceFolder}/.kilocode/rules/"
+      },
+      "install": {
+        "method": "copy"
+      }
+    },
+    {
+      "id": "cline",
+      "name": "Cline",
+      "kind": "desktop",
+      "platforms": [
+        "macos"
+      ],
+      "destinations": {
+        "macos": "${workspaceFolder}/",
+        "windows": "${workspaceFolder}/",
+        "linux": "${workspaceFolder}/"
+      },
+      "install": {
+        "method": "merge"
+      }
+    }
+  ]
+}

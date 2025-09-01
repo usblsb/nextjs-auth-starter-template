@@ -1,3 +1,5 @@
+# clerk-nextjs-auth-starter-template
+
 <div align="center">
   <h1>
     Fork de Next.js Clerk auth starter template
@@ -46,8 +48,46 @@ To learn more about Clerk and Next.js, check out the following resources:
 - [Clerk Documentation](https://go.clerk.com/aNiTioa)
 - [Next.js Documentation](https://nextjs.org/docs)
 
-### 1. Propósito de la carpeta \_template
+## Estructura
 
-- La carpeta \_template contiene componentes reutilizables del starter template
-- Está diseñada para ser utilizada mientras desarrollas tu aplicación
-- Los componentes como Header y Footer son funcionales y listos para usar
+```
+├── app/                          # Directorio principal Next.js App Router
+│   ├── (pages-footer)/          # Páginas legales agrupadas (aviso legal, cookies, etc.)
+│   ├── _template/               # Componentes y contenido del template
+│   ├── api/                     # Rutas API de Next.js
+│   ├── components/              # Componentes React reutilizables
+│   ├── dashboard/               # Página del dashboard autenticado
+│   ├── sign-in/                 # Página de inicio de sesión con Clerk
+│   ├── layout.tsx               # Layout raíz con ClerkProvider
+│   ├── page.tsx                 # Página principal (Academia de Electrónica)
+│   └── globals.css              # Estilos globales
+├── public/                      # Archivos estáticos
+│   ├── images/                  # Imágenes del proyecto
+│   └── *.svg, *.png             # Logos y assets
+├── styles/                      # Estilos adicionales
+├── middleware.ts                # Middleware de Clerk para autenticación
+├── package.json                 # Dependencias del proyecto
+└── tsconfig.json               # Configuración TypeScript
+```
+
+## Archivos Principales
+
+- **app/layout.tsx**: Layout principal con ClerkProvider y configuración de apariencia
+- **app/page.tsx**: Página de inicio (Academia de Electrónica)
+- **app/components/user-details.tsx**: Componente para mostrar detalles del usuario autenticado
+- **middleware.ts**: Middleware de Clerk para proteger rutas
+- **package.json**: Next.js 15.3.4 + Clerk 6.22.0 + Tailwind 4.1.11
+- **app/(pages-footer)/**: Páginas legales agrupadas por routing
+- **app/\_template/**: Sistema de templates reutilizable
+
+## Para LLMs
+
+- **Patrón principal**: Next.js App Router + Clerk Auth + Tailwind CSS
+- **Archivos clave**: layout.tsx, middleware.ts, user-details.tsx, page.tsx
+- **Convenciones**:
+  - Grupos de rutas con paréntesis: `(pages-footer)`
+  - Rutas dinámicas: `[[...sign-in]]`
+  - Componentes client: `"use client"`
+  - Fuentes locales: GeistSans y GeistMono
+  - Gestión de paquetes: pnpm
+  - Tema personalizado Clerk con variables CSS
