@@ -17,12 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
 			type: "website",
 		},
 		robots: {
-			index: true,
-			follow: true,
+			index: false,
+			follow: false,
 			noarchive: true,
 			nocache: true,
-			nosnippet: false,
-			noimageindex: false,
+			nosnippet: true,
+			noimageindex: true,
 			notranslate: true,
 		},
 	};
@@ -37,7 +37,7 @@ export default function SignUpPage() {
 					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 						<div className="lg:grid lg:grid-cols-12 lg:gap-8">
 							<div className="lg:col-span-12">
-								<div className="mt-8 max-w-4xl mx-auto text-center space-y-6">
+								<div className="flex justify-center py-12">
 									<SignUp />
 								</div>
 							</div>

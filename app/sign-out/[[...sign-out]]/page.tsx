@@ -16,12 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
 			type: "website",
 		},
 		robots: {
-			index: true,
-			follow: true,
+			index: false,
+			follow: false,
 			noarchive: true,
 			nocache: true,
-			nosnippet: false,
-			noimageindex: false,
+			nosnippet: true,
+			noimageindex: true,
 			notranslate: true,
 		},
 	};
