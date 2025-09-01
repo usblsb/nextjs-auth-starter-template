@@ -45,3 +45,9 @@ To learn more about Clerk and Next.js, check out the following resources:
 - [Quickstart: Get started with Next.js and Clerk](https://go.clerk.com/vgWhQ7B)
 - [Clerk Documentation](https://go.clerk.com/aNiTioa)
 - [Next.js Documentation](https://nextjs.org/docs)
+
+### 1. Propósito de la carpeta \_template
+
+- La carpeta \_template contiene componentes reutilizables del starter template
+- Está diseñada para ser utilizada mientras desarrollas tu aplicación
+- Los componentes como Header y Footer son funcionales y listos para usar
