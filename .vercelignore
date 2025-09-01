@@ -1,0 +1,19 @@
+# Backup files - evitar problemas en despliegue
+/backup/
+backup/
+
+# Documentos de desarrollo
+/documents/
+documents/
+
+# Archivos de configuración local
+.env.example
+
+# Logs y archivos temporales
+*.log
+.DS_Store
+
+# Carpetas de desarrollo
+config/
+reglas_llm/
+vscode/

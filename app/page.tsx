@@ -1,6 +1,7 @@
 import { Metadata } from "next";
-import Header from "./_template/components/header";
-import { Footer } from "./_template/components/footer";
+
+import Header from "./components/layouts/header";
+import Footer from "./components/layouts/footer";
 
 export async function generateMetadata(): Promise<Metadata> {
 	const title = "Academia de Electrónica | Electrónica School";
