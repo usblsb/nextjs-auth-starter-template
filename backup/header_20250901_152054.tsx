@@ -30,20 +30,12 @@ export default function Header() {
 							</button>
 						</>
 					) : (
-						<div className="flex items-center space-x-3">
-							<Link
-								href="/sign-up"
-								className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-							>
-								Registrarse
-							</Link>
-							<Link
-								href="/sign-in"
-								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-							>
-								Iniciar Sesión
-							</Link>
-						</div>
+						<Link
+							href="/sign-in"
+							className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+						>
+							Iniciar Sesión
+						</Link>
 					)}
 				</div>
 			</div>
