@@ -44,7 +44,7 @@ export default async function WebDashboardPage() {
 								<div className="max-w-4xl mx-auto">
 									{/* Contenedor del componente UserProfile */}
 									<UserProfile
-										appearance={{
+							appearance={{
 											elements: {
 												// Personalización del contenedor principal
 												rootBox: "w-full",
