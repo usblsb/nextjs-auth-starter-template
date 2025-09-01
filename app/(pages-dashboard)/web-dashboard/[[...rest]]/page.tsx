@@ -1,8 +1,9 @@
 import { Metadata } from "next";
-import { UserProfile } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import Header from "../../components/layouts/header";
-import { Footer } from "../../_template/components/footer";
+import { redirect } from "next/navigation";
+import Header from "../../../components/layouts/header";
+import { Footer } from "../../../_template/components/footer";
+import UserProfileWrapper from "../components/user-profile-wrapper";
 
 export async function generateMetadata(): Promise<Metadata> {
 	const title = "Dashboard - Administrar Cuenta | Electrónica School";
@@ -31,7 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function WebDashboardPage() {
 	// Protección de ruta - Solo usuarios autenticados pueden acceder
-	await auth.protect();
+	const { userId } = await auth.protect();
+
+	// Verificación adicional: si no hay userId, redirigir a sign-in
+	if (!userId) {
+		redirect("/sign-in");
+	}
 
 	return (
 		<>
@@ -43,8 +49,8 @@ export default async function WebDashboardPage() {
 							<div className="lg:col-span-12">
 								<div className="max-w-4xl mx-auto">
 									{/* Contenedor del componente UserProfile */}
-									<UserProfile
-							appearance={{
+									<UserProfileWrapper
+										appearance={{
 											elements: {
 												// Personalización del contenedor principal
 												rootBox: "w-full",
@@ -74,8 +80,6 @@ export default async function WebDashboardPage() {
 												borderRadius: "0.375rem", // rounded-md
 											},
 										}}
-										path="/web-dashboard"
-										routing="path"
 									/>
 								</div>
 							</div>
