@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useReverification } from '@clerk/nextjs';
 
 interface PasswordChangeFormProps {
   user: any;
@@ -103,6 +103,22 @@ export default function PasswordChangeForm({
   // Calcular fortaleza de contraseña
   const passwordStrength = validatePasswordStrength(formState.newPassword);
 
+  // Función para cambiar contraseña con reverificación
+  const updatePasswordWithReverification = async () => {
+    if (!user) {
+      throw new Error('Usuario no disponible');
+    }
+    
+    return await user.updatePassword({
+      currentPassword: formState.currentPassword,
+      newPassword: formState.newPassword,
+      signOutOfOtherSessions: true // Cerrar otras sesiones por seguridad
+    });
+  };
+
+  // Hook de reverificación para manejar verificación adicional
+  const updatePasswordAction = useReverification(updatePasswordWithReverification);
+
   // Función mejorada para manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,16 +157,8 @@ export default function PasswordChangeForm({
     if (onLoading) onLoading(true);
     
     try {
-      // Implementación real con Clerk
-      if (user) {
-        await user.updatePassword({
-          currentPassword: formState.currentPassword,
-          newPassword: formState.newPassword,
-          signOutOfOtherSessions: true // Cerrar otras sesiones por seguridad
-        });
-      } else {
-        throw new Error('Usuario no disponible');
-      }
+      // Usar la acción con reverificación
+      await updatePasswordAction();
       
       // Éxito
       setFormState({
