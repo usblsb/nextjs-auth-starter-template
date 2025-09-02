@@ -1,20 +1,32 @@
 # Guía para Crear un Dashboard de Perfil de Usuario Personalizado con Clerk
 
-Este documento te guiará para construir una página de perfil de usuario desde cero, aprovechando los hooks y las APIs de Clerk para la lógica de backend.
+Este documento te guiará para construir una página de perfil de usuario desde
+cero, aprovechando los hooks y las APIs de Clerk para la lógica de backend,
+debes de recordar que actualmente tenemos una pagina de dashboard que muestra el
+perfil de usuario de Clerk usando el componente UserProfile.
 
-**Objetivos del Dashboard:**
+**Objetivos de funcionamiento del Dashboard:**
+El objetivo es sustituir el componente UserProfile de clerk por un dashboard
+manual en la misma pagina.
 
-- Mostrar la foto de perfil del usuario.
-- Mostrar el email principal (sin opción de añadir o eliminar otros).
-- Permitir al usuario cambiar su contraseña.
-- Listar las sesiones activas y permitir cerrarlas.
+El dashboard sera similar al que ofrece Clerk tendra un menu lateral izquierdo
+con el "boton de Perfil" y el "boton de Seguridad":
+
+- 1 El boton de Perfil debe mostrar la foto de perfil del usuario y su email principal (sin opción de añadir o eliminar otros emails).
+- 2 El boton de Seguridad debe mostrar el password con asteriscos y permitir al
+  usuario cambiar su contraseña, debajo debe mostrar los dispositivos activos .
 
 #### Paso 1: Crear la Estructura de la Página y Obtener los Datos del Usuario
 
-Primero, crea el archivo para tu página de perfil (por ejemplo, `pages/dashboard/profile.js`) y utiliza el hook `useUser` para acceder a la información del usuario que ha iniciado sesión.
+Primero, en la página de perfil sustituye el dashboard que mostramos con el
+componente UserProfile y utiliza el hook `useUser` para acceder a la información
+del usuario que ha iniciado sesión para mostrar su los botones de Perfil y
+Seguridad con su informacion.
+
+EJEMPLO:
 
 ```javascript
-// pages/dashboard/profile.js
+app / (pages - dashboard) / web - dashboard / profile.js;
 import { useUser } from "@clerk/nextjs";
 
 export default function ProfilePage() {
@@ -228,7 +240,7 @@ Para listar las conexiones activas, usaremos el hook `useSessionList`. Este hook
 Ahora, importa y utiliza los componentes que creaste en tu página `ProfilePage`.
 
 ```javascript
-// pages/dashboard/profile.js (versión final)
+app/(pages-dashboard)/web-dashboard/profile.js (versión final)
 import { useUser } from "@clerk/nextjs";
 import PasswordChangeForm from "../../components/PasswordChangeForm"; // Ajusta la ruta si es necesario
 import ActiveSessions from "../../components/ActiveSessions"; // Ajusta la ruta si es necesario
