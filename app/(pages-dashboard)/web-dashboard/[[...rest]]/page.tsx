@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Header from "../../../components/layouts/header";
 import { Footer } from "../../../_template/components/footer";
-import UserProfileWrapper from "../components/user-profile-wrapper";
+import CustomDashboard from "../../../components/dashboard/custom-dashboard";
 
 export async function generateMetadata(): Promise<Metadata> {
 	const title = "Dashboard - Administrar Cuenta | Electrónica School";
@@ -48,28 +48,19 @@ export default async function WebDashboardPage() {
 						<div className="lg:grid lg:grid-cols-12 lg:gap-8">
 							<div className="lg:col-span-12">
 								<div className="max-w-4xl mx-auto">
-									{/* Contenedor del componente UserProfile */}
-									<UserProfileWrapper
+									{/* Contenedor del Dashboard Personalizado */}
+									<CustomDashboard
 										appearance={{
 											elements: {
 												// Personalización del contenedor principal
 												rootBox: "w-full",
 												card: "shadow-none border-0 bg-transparent",
-												// Personalización de la navegación
-												navbar: "border-b border-gray-200 mb-6",
-												navbarButton:
-													"text-gray-600 hover:text-blue-600 font-medium",
-												navbarButtonActive:
-													"text-blue-600 border-b-2 border-blue-600",
 												// Personalización de formularios
 												formButtonPrimary:
 													"bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200",
 												formFieldInput:
 													"border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500",
 												formFieldLabel: "text-gray-700 font-medium",
-												// Personalización de la página principal
-												page: "bg-transparent",
-												pageScrollBox: "bg-transparent",
 											},
 											variables: {
 												// Variables de color personalizadas
