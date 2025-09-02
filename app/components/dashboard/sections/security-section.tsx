@@ -17,7 +17,7 @@ export default function SecuritySection({
 	user: propUser,
 	onError,
 	onLoading,
-	className = ""
+	className = "",
 }: SecuritySectionProps = {}) {
 	const { user: hookUser, isLoaded } = useUser();
 	const user = propUser || hookUser;
@@ -65,16 +65,19 @@ export default function SecuritySection({
 	}, [isLoaded, user, calculateSecurityScore]);
 
 	// Función para manejar errores
-	const handleError = useCallback((errorMessage: string) => {
-		setError(errorMessage);
-		setSuccess(null);
-		if (onError) onError(errorMessage);
+	const handleError = useCallback(
+		(errorMessage: string) => {
+			setError(errorMessage);
+			setSuccess(null);
+			if (onError) onError(errorMessage);
 
-		// Limpiar error después de 5 segundos
-		setTimeout(() => {
-			setError(null);
-		}, 5000);
-	}, [onError]);
+			// Limpiar error después de 5 segundos
+			setTimeout(() => {
+				setError(null);
+			}, 5000);
+		},
+		[onError]
+	);
 
 	// Función para manejar éxito
 	const handleSuccess = useCallback((successMessage: string) => {
@@ -93,10 +96,13 @@ export default function SecuritySection({
 	}, []);
 
 	// Función para manejar estado de carga
-	const handleLoading = useCallback((loading: boolean) => {
-		setIsLoading(loading);
-		if (onLoading) onLoading(loading);
-	}, [onLoading]);
+	const handleLoading = useCallback(
+		(loading: boolean) => {
+			setIsLoading(loading);
+			if (onLoading) onLoading(loading);
+		},
+		[onLoading]
+	);
 
 	// Función para obtener el color de la puntuación de seguridad
 	const getSecurityScoreColor = (score: number) => {
