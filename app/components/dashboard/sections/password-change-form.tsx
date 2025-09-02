@@ -8,6 +8,7 @@ interface PasswordChangeFormProps {
   onError?: (error: string) => void;
   onLoading?: (loading: boolean) => void;
   onPasswordChanged?: () => void;
+  onSuccess?: (message: string) => void;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export default function PasswordChangeForm({
   onError, 
   onLoading, 
   onPasswordChanged,
+  onSuccess,
   className = '' 
 }: PasswordChangeFormProps) {
   const { user: clerkUser } = useUser();
@@ -171,6 +173,7 @@ export default function PasswordChangeForm({
       });
       
       if (onPasswordChanged) onPasswordChanged();
+      if (onSuccess) onSuccess('Contraseña cambiada exitosamente');
       
       // Limpiar mensaje de éxito después de 5 segundos
       setTimeout(() => {
