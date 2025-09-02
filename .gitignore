@@ -32,6 +32,7 @@ yarn-error.log*
 
 # local env files
 .env
+.env.*example_*
 .env*.local
 
 # vercel
@@ -57,3 +58,4 @@ backup/
 *.bak
 
 .copias-en-zip-del-proyecto
+backup
