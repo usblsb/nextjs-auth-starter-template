@@ -15,3 +15,8 @@ datasource db {
   // Configuración SSL requerida para Neon.com
   // La URL ya incluye sslmode=require
 }
+
+// ===== MODELOS ORGANIZADOS EN SUBCARPETAS =====
+// Los modelos están organizados en archivos separados dentro de prisma/schema/
+// - billing.prisma: Modelos de facturación y suscripciones
+// - Prisma automáticamente combina todos los archivos .prisma al ejecutar generate
