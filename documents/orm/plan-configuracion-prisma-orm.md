@@ -36,7 +36,7 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
 
 ### Paso 2.1: Configuración de variables de entorno
 
-- [ ] Usar archivo `.env`
+- [ ] Usar archivo `.env` que ya contiene las variables rellenadas
 - [ ] Usar las variables ya establecidas de conexión Neon.com:
   - `DB_HOST=""`
   - `DB_PORT=""`

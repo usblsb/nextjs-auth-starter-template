@@ -2,8 +2,6 @@
 
 ## Fase 1: Configuración de Infraestructura Base
 
-**Duración estimada: 3-5 días**
-
 ### Tareas:
 
 - [ ] Configurar proyecto Neon.com en región Frankfurt
@@ -19,8 +17,6 @@
 
 ## Fase 2: Configuración Fiscal en Stripe
 
-**Duración estimada: 2-3 días**
-
 ### Tareas:
 
 - [ ] Activar Stripe Tax y registrar España continental en Dashboard
@@ -33,8 +29,6 @@
 - [ ] Probar flujos: España continental (auto) vs Canarias (manual)
 
 ## Fase 3: Página de Precios y Checkout
-
-**Duración estimada: 4-6 días**
 
 ### Tareas:
 
@@ -50,8 +44,6 @@
 - [ ] Añadir manejo de errores y validaciones
 
 ## Fase 4: Integración Stripe-Clerk Bidireccional
-
-**Duración estimada: 5-7 días**
 
 ### Tareas:
 
@@ -72,8 +64,6 @@
 
 ## Fase 5: Portal de Cliente y Dashboard Personal
 
-**Duración estimada: 3-4 días**
-
 ### Tareas:
 
 - [ ] Configurar Stripe Customer Portal:
@@ -91,8 +81,6 @@
 
 ## Fase 6: Sistema de Logs y Auditoría
 
-**Duración estimada: 2-3 días**
-
 ### Tareas:
 
 - [ ] Implementar logging automático en middleware:
@@ -108,8 +96,6 @@
 
 ## Fase 7: Control de Acceso y Permisos
 
-**Duración estimada: 3-4 días**
-
 ### Tareas:
 
 - [ ] Definir matriz de permisos por plan:
@@ -124,8 +110,6 @@
 
 ## Fase 8: Manejo de Casos Especiales
 
-**Duración estimada: 2-3 días**
-
 ### Tareas:
 
 - [ ] Implementar manejo de cambio de región:
@@ -139,8 +123,6 @@
 
 ## Fase 9: Testing y Optimización
 
-**Duración estimada: 3-4 días**
-
 ### Tareas:
 
 - [ ] Testing end-to-end de flujos completos
@@ -152,8 +134,6 @@
 - [ ] Optimización de queries y índices en Neon
 
 ## Fase 10: Monitoreo y Deployment
-
-**Duración estimada: 2 días**
 
 ### Tareas:
 
@@ -167,5 +147,4 @@
 
 ---
 
-**Duración total estimada: 29-41 días**
 **Dependencias críticas**: Orden secuencial requerido para Fases 1-4, resto pueden paralelizarse parcialmente.

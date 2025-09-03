@@ -59,3 +59,4 @@ backup/
 
 .copias-en-zip-del-proyecto
 backup
+/app/generated/prisma
