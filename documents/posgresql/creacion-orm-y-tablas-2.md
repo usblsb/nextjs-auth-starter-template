@@ -1,5 +1,3 @@
-Sí. Implemento el enfoque **NO ENUM** para Stripe y te dejo todo listo en Markdown.
-
 # Prisma + Neon (PostgreSQL 17) — Esquema “user\_\*” sin ENUM para Stripe
 
 > Hipótesis: roles y planes de Stripe cambian. Evito `enum` en Prisma y uso `String` + `CHECK` (restricción lógica) y catálogo `user_billing_plans` (mapeo `stripe_price_id` → tu `plan_key`).
@@ -151,23 +149,7 @@ model UserPermission {
 
 ---
 
-## 2) `.env` y `DATABASE_URL` (Neon)
-
-```bash
-# .env
-DB_HOST=""
-DB_PORT=""
-DB_NAME=""
-DB_USER=""
-DB_PASSWORD=""
-
-# Prisma usa DATABASE_URL compuesta desde las anteriores
-DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&connect_timeout=15"
-```
-
----
-
-## 3) SQL de comentarios (COMMENT) y restricciones CHECK
+## 2) SQL de comentarios (COMMENT) y restricciones CHECK
 
 > Añade esto en una migración SQL posterior o ejecútalo con `psql`. Mantengo prefijo `user_` y comento **todas** las columnas pedidas. Incluyo `CHECK` para `status` y `billing_period` sin ENUM.
 
@@ -263,7 +245,7 @@ ALTER TABLE public.user_subscriptions
 
 ---
 
-## 4) Comandos para inicializar y migrar
+## 3) Comandos para inicializar y migrar
 
 ```bash
 # 1) Instalar dependencias
@@ -389,5 +371,3 @@ WHERE conrelid = 'public.user_subscriptions'::regclass
 - `status` y `billing_period` se validan con `CHECK` en SQL (no `enum` en Prisma).
 - El “tipo de plan” se deduce por `stripe_price_id` uniéndose a `user_billing_plans` (`plan_key`).
 - `features` usa `text[]` (array de strings en PostgreSQL).
-
-Fin.
