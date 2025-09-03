@@ -1,7 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 import "./globals.css";
-import "../styles/pages-dashboard.css";
+// import "../styles/pages-dashboard.css";
 import Script from "next/script";
 import localFont from "next/font/local";
 import { templateMetadata } from "./_template/content/metadata";
