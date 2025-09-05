@@ -16,7 +16,222 @@ datasource db {
   // La URL ya incluye sslmode=require
 }
 
-// ===== MODELOS ORGANIZADOS EN SUBCARPETAS =====
-// Los modelos están organizados en archivos separados dentro de prisma/schema/
-// - billing.prisma: Modelos de facturación y suscripciones
-// - Prisma automáticamente combina todos los archivos .prisma al ejecutar generate
+// ===== MODELOS DE FACTURACIÓN Y SUSCRIPCIONES =====
+// Descripción: Modelos relacionados con planes de facturación, suscripciones y pagos
+// Prefijo obligatorio: user_ (según guía de uso del ORM)
+
+// ===== CATÁLOGO DE PLANES DE FACTURACIÓN =====
+// Tabla que define los planes disponibles para suscripciones
+// Actúa como catálogo maestro de planes de Stripe
+model UserBillingPlan {
+  // Clave primaria: identificador único del plan
+  planKey       String   @id @db.VarChar(50)
+  
+  // Información básica del plan
+  name          String   @db.VarChar(100)
+  description   String?  @db.Text
+  
+  // Integración con Stripe
+  stripePriceId String   @unique @db.VarChar(100)
+  stripeProductId String @db.VarChar(100)
+  
+  // Configuración de precios
+  price         Decimal  @db.Decimal(10,2)
+  currency      String   @db.VarChar(3) // ISO 4217 (USD, EUR, etc.)
+  interval      String   @db.VarChar(20) // monthly, yearly, etc.
+  
+  // Estado del plan
+  isActive      Boolean  @default(true)
+  
+  // Metadatos adicionales (características, límites, etc.)
+  meta          Json?    @db.Json
+  
+  // Timestamps
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  
+  // ===== RELACIONES =====
+  // Un plan puede tener múltiples suscripciones
+  subscriptions UserSubscription[]
+  
+  // ===== MAPEO A TABLA =====
+  @@map("user_billing_plans")
+  
+  // ===== ÍNDICES =====
+  @@index([isActive])
+  @@index([stripePriceId])
+}
+
+// ===== SUSCRIPCIONES DE USUARIOS =====
+// Tabla que gestiona las suscripciones activas de los usuarios
+// Integración completa con Stripe y Clerk
+model UserSubscription {
+  // Clave primaria: ID autoincremental BigInt
+  id            BigInt   @id @default(autoincrement()) @db.BigInt
+  
+  // ===== INTEGRACIÓN CON CLERK =====
+  // ID del usuario en Clerk (sistema de autenticación)
+  userId        String   @db.VarChar(50)
+  
+  // ===== INTEGRACIÓN CON STRIPE =====
+  // IDs de Stripe para gestión de suscripciones
+  stripeCustomerId     String @db.VarChar(100)
+  stripeSubscriptionId String @unique @db.VarChar(100)
+  stripePriceId        String @db.VarChar(100)
+  
+  // ===== ESTADO Y PERIODICIDAD =====
+  // Estados: active, canceled, past_due, unpaid, trialing, etc.
+  status        String   @db.VarChar(20)
+  // Periodicidad: monthly, yearly, weekly, etc.
+  interval      String   @db.VarChar(20)
+  
+  // ===== PERÍODO DE SUSCRIPCIÓN =====
+  // Fechas de inicio y fin del período actual
+  currentPeriodStart DateTime @db.Timestamptz
+  currentPeriodEnd   DateTime @db.Timestamptz
+  
+  // ===== CARACTERÍSTICAS Y FUNCIONALIDADES =====
+  // Array de strings con las características incluidas
+  features      String[] @db.VarChar(50)
+  
+  // ===== DATOS RAW DE STRIPE =====
+  // Payload completo de Stripe para auditoría y debugging
+  raw           Json?    @db.Json
+  
+  // ===== TIMESTAMPS =====
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  
+  // ===== RELACIONES =====
+  // Relación con el plan de facturación
+  billingPlan   UserBillingPlan @relation(fields: [stripePriceId], references: [stripePriceId])
+  
+  // ===== MAPEO A TABLA =====
+  @@map("user_subscriptions")
+  
+  // ===== ÍNDICES =====
+  @@index([userId])
+  @@index([stripePriceId])
+  @@index([status])
+  @@index([stripeCustomerId])
+}
+
+// ===== DIRECCIONES DE FACTURACIÓN =====
+// Tabla que gestiona las direcciones de facturación de los usuarios
+// Integración con Clerk para identificación de usuarios
+model UserBillingAddress {
+  // Clave primaria: ID autoincremental BigInt
+  id            BigInt   @id @default(autoincrement()) @db.BigInt
+  
+  // ===== INTEGRACIÓN CON CLERK =====
+  // ID del usuario en Clerk (sistema de autenticación)
+  userId        String   @db.VarChar(50)
+  
+  // ===== CAMPOS DE DIRECCIÓN =====
+  // País con código ISO 3166-1 alpha-2 (2 caracteres)
+  country       String   @db.VarChar(2)
+  // Estado o provincia
+  state         String?  @db.VarChar(100)
+  // Ciudad
+  city          String   @db.VarChar(100)
+  // Código postal
+  postalCode    String   @db.VarChar(20)
+  // Línea de dirección 1 (calle, número)
+  addressLine1  String   @db.VarChar(200)
+  // Línea de dirección 2 (apartamento, suite, etc.) - opcional
+  addressLine2  String?  @db.VarChar(200)
+  
+  // ===== DIRECCIÓN COMPLETA =====
+  // Campo de texto completo para la dirección formateada
+  fullAddress   String   @db.Text
+  
+  // ===== TIMESTAMPS =====
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  
+  // ===== MAPEO A TABLA =====
+  @@map("user_billing_address")
+  
+  // ===== ÍNDICES =====
+  @@index([userId])
+  @@index([country])
+}
+
+// ===== LOGS DE ACTIVIDAD =====
+// Tabla que registra las actividades y acciones de los usuarios
+// Sistema de auditoría completo para trazabilidad
+model UserActivityLog {
+  // Clave primaria: ID autoincremental BigInt
+  id            BigInt   @id @default(autoincrement()) @db.BigInt
+  
+  // ===== INTEGRACIÓN CON CLERK =====
+  // ID del usuario en Clerk (sistema de autenticación)
+  userId        String   @db.VarChar(50)
+  
+  // ===== CAMPOS DE AUDITORÍA =====
+  // Acción realizada por el usuario
+  action        String   @db.VarChar(120)
+  // Timestamp de la acción (se usa createdAt para esto)
+  // Dirección IP del usuario
+  ipAddress     String?  @db.VarChar(45) // IPv6 máximo 45 caracteres
+  // User Agent del navegador
+  userAgent     String?  @db.Text
+  
+  // ===== CONTEXTO ADICIONAL =====
+  // Metadatos adicionales en formato JSON
+  metadata      Json?    @db.Json
+  
+  // ===== INFORMACIÓN DE SESIÓN =====
+  // ID de sesión para agrupar actividades relacionadas
+  sessionId     String?  @db.VarChar(100)
+  // Referencia a recurso afectado (opcional)
+  resourceId    String?  @db.VarChar(100)
+  resourceType  String?  @db.VarChar(50)
+  
+  // ===== TIMESTAMPS =====
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  
+  // ===== MAPEO A TABLA =====
+  @@map("user_activity_log")
+  
+  // ===== ÍNDICES =====
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+// ===== PERMISOS DE USUARIO =====
+// Tabla que gestiona los permisos y roles de los usuarios
+// Sistema de autorización granular por usuario
+model UserPermission {
+  // Clave primaria: ID autoincremental BigInt
+  id            BigInt   @id @default(autoincrement()) @db.BigInt
+  
+  // ===== INTEGRACIÓN CON CLERK =====
+  // ID del usuario en Clerk (sistema de autenticación)
+  userId        String   @db.VarChar(50)
+  
+  // ===== CAMPOS DE PERMISOS =====
+  // Tipo de permiso (role, feature, action, etc.)
+  type          String   @db.VarChar(50)
+  // Valor del permiso (admin, premium, read_reports, etc.)
+  value         String   @db.VarChar(100)
+  
+  // ===== EXPIRACIÓN OPCIONAL =====
+  // Fecha de expiración del permiso (opcional)
+  expiresAt     DateTime? @db.Timestamptz
+  
+  // ===== TIMESTAMPS =====
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+  
+  // ===== MAPEO A TABLA =====
+  @@map("user_permissions")
+  
+  // ===== ÍNDICES =====
+  @@index([userId])
+  @@index([type])
+  @@index([userId, type])
+  @@index([expiresAt])
+}

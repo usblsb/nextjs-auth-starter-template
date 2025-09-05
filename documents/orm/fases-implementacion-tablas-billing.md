@@ -89,24 +89,24 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 3.1 Migración Inicial de Tablas
 
-- [ ] Ejecutar `pnpm prisma migrate dev --name init_billing`
-- [ ] Verificar que todas las tablas se crean correctamente
-- [ ] Confirmar que los índices se establecen apropiadamente
-- [ ] Validar que las relaciones funcionan correctamente
+- [✅] Ejecutar `pnpm prisma migrate dev --name init_billing`
+- [✅] Verificar que todas las tablas se crean correctamente
+- [✅] Confirmar que los índices se establecen apropiadamente
+- [✅] Validar que las relaciones funcionan correctamente
 
 ### 3.2 Generación del Cliente Prisma
 
-- [ ] Ejecutar `pnpm prisma generate`
-- [ ] Verificar que el cliente se genera sin errores
-- [ ] Confirmar que los tipos TypeScript están disponibles
-- [ ] Validar que las relaciones están tipadas correctamente
+- [✅] Ejecutar `pnpm prisma generate`
+- [✅] Verificar que el cliente se genera sin errores
+- [✅] Confirmar que los tipos TypeScript están disponibles
+- [✅] Validar que las relaciones están tipadas correctamente
 
 ### 3.3 Verificación de la Estructura
 
-- [ ] Usar `pnpm prisma studio` para inspeccionar tablas
-- [ ] Verificar que todas las tablas tienen prefijo `user_`
-- [ ] Confirmar que los tipos de datos son correctos
-- [ ] Validar que las restricciones están aplicadas
+- [✅] Usar `pnpm prisma studio` para inspeccionar tablas
+- [✅] Verificar que todas las tablas tienen prefijo `user_`
+- [✅] Confirmar que los tipos de datos son correctos
+- [✅] Validar que las restricciones están aplicadas
 
 ---
 
@@ -114,9 +114,9 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 4.1 Creación de Migración para Comentarios y Checks
 
-- [ ] Ejecutar `pnpm prisma migrate dev --create-only --name comments_and_checks`
-- [ ] Localizar el archivo de migración SQL generado
-- [ ] Preparar el contenido SQL para comentarios y restricciones
+- [✅] Ejecutar `pnpm prisma migrate dev --create-only --name comments_and_checks`
+- [✅] Localizar el archivo de migración SQL generado
+- [✅] Preparar el contenido SQL para comentarios y restricciones
 
 ### 4.2 Añadir Comentarios de Tablas
 

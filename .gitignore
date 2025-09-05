@@ -62,3 +62,4 @@ backup
 /app/generated/prisma
 
 backup-posgresql-neon
+.env.error
