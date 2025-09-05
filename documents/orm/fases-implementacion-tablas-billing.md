@@ -10,22 +10,22 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 1.1 Verificación de Dependencias
 
-- [✅] Confirmar que Prisma ORM está configurado correctamente
-- [✅] Verificar conexión activa con Neon.com (PostgreSQL 17)
-- [✅] Validar que las variables de entorno están configuradas
-- [✅] Comprobar que el archivo `schema.prisma` base existe
+- [ ] Confirmar que Prisma ORM está configurado correctamente
+- [ ] Verificar conexión activa con Neon.com (PostgreSQL 17)
+- [ ] Validar que las variables de entorno están configuradas
+- [ ] Comprobar que el archivo `schema.prisma` base existe
 
 ### 1.2 Instalación de Dependencias Adicionales
 
-- [✅] Verificar que `@prisma/client` está instalado
-- [✅] Confirmar que `prisma` está en devDependencies
-- [✅] Validar versiones compatibles con Next.js 15
+- [ ] Verificar que `@prisma/client` está instalado
+- [ ] Confirmar que `prisma` está en devDependencies
+- [ ] Validar versiones compatibles con Next.js 15
 
 ### 1.3 Backup de Seguridad
 
-- [✅] Crear backup del `schema.prisma` actual
-- [✅] Documentar estado actual de la base de datos
-- [✅] Crear punto de restauración en caso de errores
+- [ ] Crear backup del `schema.prisma` actual
+- [ ] Documentar estado actual de la base de datos
+- [ ] Crear punto de restauración en caso de errores
 
 ---
 
@@ -33,55 +33,55 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 2.1 Modelo UserBillingPlan (Catálogo de Planes)
 
-- [✅] Crear modelo `UserBillingPlan` con campos básicos
-- [✅] Definir `planKey` como clave primaria (String)
-- [✅] Configurar `stripePriceId` como único
-- [✅] Añadir campo `meta` tipo JSON para características
-- [✅] Establecer relación con `UserSubscription`
-- [✅] Configurar mapeo a tabla `user_billing_plans`
+- [ ] Crear modelo `UserBillingPlan` con campos básicos
+- [ ] Definir `planKey` como clave primaria (String)
+- [ ] Configurar `stripePriceId` como único
+- [ ] Añadir campo `meta` tipo JSON para características
+- [ ] Establecer relación con `UserSubscription`
+- [ ] Configurar mapeo a tabla `user_billing_plans`
 
 ### 2.2 Modelo UserSubscription (Suscripciones)
 
-- [✅] Crear modelo `UserSubscription` con ID BigInt autoincremental
-- [✅] Definir campos de integración con Stripe (customer, subscription, price)
-- [✅] Configurar campos de usuario (userId de Clerk)
-- [✅] Añadir campos de estado y periodicidad (String sin ENUM)
-- [✅] Definir campos de período (start/end dates)
-- [✅] Configurar campo `features` como array de strings
-- [✅] Añadir campo `raw` JSON para payload de Stripe
-- [✅] Establecer relación con `UserBillingPlan`
-- [✅] Configurar índices por `userId` y `stripePriceId`
-- [✅] Mapear a tabla `user_subscriptions`
+- [ ] Crear modelo `UserSubscription` con ID BigInt autoincremental
+- [ ] Definir campos de integración con Stripe (customer, subscription, price)
+- [ ] Configurar campos de usuario (userId de Clerk)
+- [ ] Añadir campos de estado y periodicidad (String sin ENUM)
+- [ ] Definir campos de período (start/end dates)
+- [ ] Configurar campo `features` como array de strings
+- [ ] Añadir campo `raw` JSON para payload de Stripe
+- [ ] Establecer relación con `UserBillingPlan`
+- [ ] Configurar índices por `userId` y `stripePriceId`
+- [ ] Mapear a tabla `user_subscriptions`
 
 ### 2.3 Modelo UserBillingAddress (Direcciones de Facturación)
 
-- [✅] Crear modelo `UserBillingAddress` con ID BigInt
-- [✅] Definir campos de dirección (país, estado, ciudad, código postal)
-- [✅] Configurar campo `country` con restricción VARCHAR(2)
-- [✅] Añadir campo `fullAddress` tipo Text
-- [✅] Establecer relación con usuario via `userId`
-- [✅] Configurar índice por `userId`
-- [✅] Mapear a tabla `user_billing_address`
+- [ ] Crear modelo `UserBillingAddress` con ID BigInt
+- [ ] Definir campos de dirección (país, estado, ciudad, código postal)
+- [ ] Configurar campo `country` con restricción VARCHAR(2)
+- [ ] Añadir campo `fullAddress` tipo Text
+- [ ] Establecer relación con usuario via `userId`
+- [ ] Configurar índice por `userId`
+- [ ] Mapear a tabla `user_billing_address`
 
 ### 2.4 Modelo UserActivityLog (Logs de Actividad)
 
-- [✅] Crear modelo `UserActivityLog` con ID BigInt
-- [✅] Definir campos de auditoría (action, timestamp, IP, userAgent)
-- [✅] Configurar campo `action` con VARCHAR(120)
-- [✅] Añadir campo `metadata` JSON para contexto adicional
-- [✅] Establecer relación con usuario via `userId`
-- [✅] Configurar índice por `userId`
-- [✅] Mapear a tabla `user_activity_log`
+- [ ] Crear modelo `UserActivityLog` con ID BigInt
+- [ ] Definir campos de auditoría (action, timestamp, IP, userAgent)
+- [ ] Configurar campo `action` con VARCHAR(120)
+- [ ] Añadir campo `metadata` JSON para contexto adicional
+- [ ] Establecer relación con usuario via `userId`
+- [ ] Configurar índice por `userId`
+- [ ] Mapear a tabla `user_activity_log`
 
 ### 2.5 Modelo UserPermission (Permisos de Usuario)
 
-- [✅] Crear modelo `UserPermission` con ID BigInt
-- [✅] Definir campos de permisos (type, value)
-- [✅] Configurar restricciones VARCHAR para campos de permiso
-- [✅] Añadir campo `expiresAt` opcional
-- [✅] Establecer relación con usuario via `userId`
-- [✅] Configurar índice por `userId`
-- [✅] Mapear a tabla `user_permissions`
+- [ ] Crear modelo `UserPermission` con ID BigInt
+- [ ] Definir campos de permisos (type, value)
+- [ ] Configurar restricciones VARCHAR para campos de permiso
+- [ ] Añadir campo `expiresAt` opcional
+- [ ] Establecer relación con usuario via `userId`
+- [ ] Configurar índice por `userId`
+- [ ] Mapear a tabla `user_permissions`
 
 ---
 
@@ -89,24 +89,24 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 3.1 Migración Inicial de Tablas
 
-- [✅] Ejecutar `pnpm prisma migrate dev --name init_billing`
-- [✅] Verificar que todas las tablas se crean correctamente
-- [✅] Confirmar que los índices se establecen apropiadamente
-- [✅] Validar que las relaciones funcionan correctamente
+- [ ] Ejecutar `pnpm prisma migrate dev --name init_billing`
+- [ ] Verificar que todas las tablas se crean correctamente
+- [ ] Confirmar que los índices se establecen apropiadamente
+- [ ] Validar que las relaciones funcionan correctamente
 
 ### 3.2 Generación del Cliente Prisma
 
-- [✅] Ejecutar `pnpm prisma generate`
-- [✅] Verificar que el cliente se genera sin errores
-- [✅] Confirmar que los tipos TypeScript están disponibles
-- [✅] Validar que las relaciones están tipadas correctamente
+- [ ] Ejecutar `pnpm prisma generate`
+- [ ] Verificar que el cliente se genera sin errores
+- [ ] Confirmar que los tipos TypeScript están disponibles
+- [ ] Validar que las relaciones están tipadas correctamente
 
 ### 3.3 Verificación de la Estructura
 
-- [✅] Usar `pnpm prisma studio` para inspeccionar tablas
-- [✅] Verificar que todas las tablas tienen prefijo `user_`
-- [✅] Confirmar que los tipos de datos son correctos
-- [✅] Validar que las restricciones están aplicadas
+- [ ] Usar `pnpm prisma studio` para inspeccionar tablas
+- [ ] Verificar que todas las tablas tienen prefijo `user_`
+- [ ] Confirmar que los tipos de datos son correctos
+- [ ] Validar que las restricciones están aplicadas
 
 ---
 
@@ -114,9 +114,9 @@ Implementación de un sistema completo de facturación integrado con Stripe y Cl
 
 ### 4.1 Creación de Migración para Comentarios y Checks
 
-- [✅] Ejecutar `pnpm prisma migrate dev --create-only --name comments_and_checks`
-- [✅] Localizar el archivo de migración SQL generado
-- [✅] Preparar el contenido SQL para comentarios y restricciones
+- [ ] Ejecutar `pnpm prisma migrate dev --create-only --name comments_and_checks`
+- [ ] Localizar el archivo de migración SQL generado
+- [ ] Preparar el contenido SQL para comentarios y restricciones
 
 ### 4.2 Añadir Comentarios de Tablas
 

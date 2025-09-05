@@ -41,7 +41,7 @@
 **Electrónica School** es una academia online especializada en la enseñanza de electrónica, reparaciones y programación. Esta plataforma web proporciona:
 
 - **Portal de estudiantes** con dashboard personalizado
-- **Sistema de autenticación** seguro y profesional
+- **Sistema de autenticación** seguro y profesional usando Clerk
 - **Gestión de perfiles** y configuración de seguridad
 - **Páginas institucionales** completas
 - **Arquitectura escalable** para futuras funcionalidades educativas
@@ -89,7 +89,7 @@ cd clerk-nextjs-auth-starter-template
    - Copia las variables de entorno desde [.env.example](./.env.example)
    - Habilita "Organizations" en la configuración de Clerk
 
-3. **Instalar dependencias:**
+3. **Instalar dependencias usando solo "pnpm" :**
 
 ```bash
 pnpm install
@@ -108,7 +108,7 @@ pnpm dev
 ## Estructura
 
 ```
-├── app/                          # Directorio principal Next.js App Router
+├── app/                         # Directorio principal Next.js App Router
 │   ├── (pages-dashboard)/       # Rutas agrupadas del dashboard
 │   │   ├── README.md            # Documentación específica del dashboard
 │   │   └── web-dashboard/       # Dashboard principal de usuarios autenticados
@@ -232,7 +232,7 @@ pnpm dev
 
 ## Para LLMs
 
-- **Patrón principal**: Next.js App Router + Clerk Auth + Tailwind CSS
+- **Patrón principal**: Next.js App Router + Clerk Auth + Tailwind CSS 4
 - **Archivos clave**: layout.tsx, middleware.ts, user-details.tsx, page.tsx
 - **Convenciones**:
   - Grupos de rutas con paréntesis: `(pages-footer)`
@@ -242,16 +242,6 @@ pnpm dev
   - Gestión de paquetes: pnpm
   - Tema personalizado Clerk con variables CSS
 
-## Contribuir
-
-Si deseas contribuir al proyecto:
-
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Crea un Pull Request
-
 ## Soporte
 
 Si tienes problemas o preguntas:
@@ -259,14 +249,6 @@ Si tienes problemas o preguntas:
 1. Revisa la documentación en `/documents/dashboard-help-docs/`
 2. Consulta los issues existentes en GitHub
 3. Crea un nuevo issue si es necesario
-
-## Roadmap
-
-- [ ] Sistema de cursos y lecciones
-- [ ] Integración con plataforma de pagos
-- [ ] Sistema de certificaciones
-- [ ] Foro de estudiantes
-- [ ] Aplicación móvil
 
 ---
 

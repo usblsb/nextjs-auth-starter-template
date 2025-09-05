@@ -1,4 +1,4 @@
-# Documento Técnico: Implementación SaaS con Clerk, Stripe y Neon
+# Documento Técnico: Implementación SaaS con Clerk, Stripe y Neon.com
 
 ## Fase 1: Configuración de Infraestructura Base
 

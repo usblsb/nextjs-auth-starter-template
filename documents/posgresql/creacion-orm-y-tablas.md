@@ -1,4 +1,4 @@
-# Prompt para configuración de Prisma con Neon.com
+# Prompt para configuración de Prisma con Neon.com (PostgreSQL 17)
 
 Necesito configurar Prisma ORM para conectarme a una base de datos PostgreSQL en Neon.com para gestionar datos de usuarios, suscripciones y logs de actividad.
 
@@ -11,6 +11,7 @@ Necesito configurar Prisma ORM para conectarme a una base de datos PostgreSQL en
   DB_NAME=""
   DB_USER=""
   DB_PASSWORD=""
+  DATABASE_URL=" Url completa con datos de acceso a la base de datos "
 
 ## Especificaciones del esquema:
 

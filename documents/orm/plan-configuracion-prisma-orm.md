@@ -1,4 +1,4 @@
-# Plan de Configuración Prisma ORM con PostgreSQL Neon.com
+# Plan de Configuración Prisma ORM con (PostgreSQL 17) Neon.com
 
 ## Resumen del Proyecto
 
@@ -36,14 +36,14 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
 
 ### Paso 2.1: Configuración de variables de entorno
 
-- [ ] Usar archivo `.env` que ya contiene las variables rellenadas
-- [ ] Usar las variables ya establecidas de conexión Neon.com:
+- Usar archivo `.env` que ya contiene las variables rellenadas
+- Usar las variables ya establecidas de conexión con Neon.com:
   - `DB_HOST=""`
   - `DB_PORT=""`
   - `DB_NAME=""`
   - `DB_USER=""`
   - `DB_PASSWORD=""`
-- [ ] Construir DATABASE_URL con formato PostgreSQL
+  - `DATABASE_URL="Url completa con datos de acceso a la base de datos"`
 
 ### Paso 2.2: Configuración del schema.prisma
 
@@ -95,7 +95,7 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
 
 ### 🔧 Configuraciones Específicas para Neon.com
 
-#### Connection String Format
+#### Connection String Format en .en DATABASE_URL ya construida
 
 ```
 DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
@@ -158,4 +158,5 @@ DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
 
 ---
 
-**Nota**: Este plan debe ejecutarse secuencialmente, completando cada fase antes de proceder a la siguiente. Cada paso debe ser validado antes de continuar.
+**Nota**: Este plan debe ejecutarse secuencialmente, completando cada fase antes
+de proceder a la siguiente. Cada paso debe ser validado por el usuario antes de continuar.

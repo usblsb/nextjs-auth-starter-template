@@ -1,4 +1,4 @@
-Entiendo tu situación. Tienes razón en querer separar las bases de datos para evitar conflictos entre SQLAlchemy/Alembic y Prisma. Te explico la estrategia correcta:
+Quiero separar las bases de datos para evitar conflictos entre SQLAlchemy/Alembic y Prisma. Te explico la estrategia correcta:
 
 ## Estrategia de Dos Bases de Datos
 
@@ -7,7 +7,7 @@ Entiendo tu situación. Tienes razón en querer separar las bases de datos para 
 - Tablas `els_*` (cursos, lecciones, diapositivas)
 - Manejada por SQLAlchemy + Alembic
 
-**Base de Datos 2 (NextJS):** `users_db`
+**Base de Datos 2 (NextJS) esta aplicación :** `users_db`
 
 - Tablas `user_*` (usuarios, suscripciones, pagos)
 - Manejada por Prisma
