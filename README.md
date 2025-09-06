@@ -1,10 +1,12 @@
 # Electrónica School - Plataforma Web
 
+## ** https://github.com/usblsb/nextjs-auth-starter-template **
+
 <div align="center">
   <h1>
     🎓 Academia de Electrónica Online
   </h1>
-  <p>Plataforma web moderna para la enseñanza de electrónica con dashboard de usuarios y sistema de autenticación</p>
+  <p>Plataforma web moderna para la enseñanza de electrónica con dashboard de usuarios y sistema de autenticación usando Clerk</p>
 </div>
 
 ## 🏷️ Badges
@@ -23,12 +25,12 @@
 
 ---
 
-## ✨ Características
+## ✨ Características implementadas
 
 - **Next.js 15** con App Router y TypeScript
 - **Clerk Authentication** - Sistema completo de autenticación y gestión de usuarios
 - **Dashboard Personalizado** - Panel de control con gestión de perfil y seguridad
-- **Tailwind CSS** - Diseño moderno y responsive
+- **Tailwind CSS 4.0 ** - Diseño moderno y responsive
 - **Páginas Legales** - Sistema completo de páginas footer (aviso legal, cookies, etc.)
 - **Sistema de Templates** - Componentes reutilizables y modulares
 - **Documentación Completa** - Guías de desarrollo y despliegue

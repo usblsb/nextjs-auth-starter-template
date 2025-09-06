@@ -105,8 +105,6 @@ model UserSubscription {
   // ===== RELACIONES =====
   // Relación con el plan de facturación
   billingPlan   UserBillingPlan @relation(fields: [stripePriceId], references: [stripePriceId])
-  // Relación con perfil de usuario (opcional)
-  userProfile   UserProfile? @relation("UserProfileSubscriptions", fields: [userId], references: [clerkUserId])
   
   // ===== MAPEO A TABLA =====
   @@map("user_subscriptions")
@@ -151,10 +149,6 @@ model UserBillingAddress {
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt @db.Timestamptz
   
-  // ===== RELACIONES =====
-  // Relación con perfil de usuario (opcional)
-  userProfile   UserProfile? @relation("UserProfileBillingAddresses", fields: [userId], references: [clerkUserId])
-  
   // ===== MAPEO A TABLA =====
   @@map("user_billing_address")
   
@@ -197,10 +191,6 @@ model UserActivityLog {
   // ===== TIMESTAMPS =====
   createdAt     DateTime @default(now()) @db.Timestamptz
   
-  // ===== RELACIONES =====
-  // Relación con perfil de usuario (opcional)
-  userProfile   UserProfile? @relation("UserProfileActivityLogs", fields: [userId], references: [clerkUserId])
-  
   // ===== MAPEO A TABLA =====
   @@map("user_activity_log")
   
@@ -236,10 +226,6 @@ model UserPermission {
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt @db.Timestamptz
   
-  // ===== RELACIONES =====
-  // Relación con perfil de usuario (opcional)
-  userProfile   UserProfile? @relation("UserProfilePermissions", fields: [userId], references: [clerkUserId])
-  
   // ===== MAPEO A TABLA =====
   @@map("user_permissions")
   
@@ -248,100 +234,4 @@ model UserPermission {
   @@index([type])
   @@index([userId, type])
   @@index([expiresAt])
-}
-
-// ===== PERFILES DE USUARIO (ESPEJO DE CLERK) =====
-// Tabla que almacena datos de usuarios de Clerk localmente
-// Cumplimiento GDPR y retención de datos por 10 años
-model UserProfile {
-  // Clave primaria: ID autoincremental BigInt
-  id            BigInt   @id @default(autoincrement()) @db.BigInt
-  
-  // ===== INTEGRACIÓN CON CLERK =====
-  // ID del usuario en Clerk (clave foránea única)
-  clerkUserId   String   @unique @db.VarChar(50)
-  
-  // ===== DATOS BÁSICOS DE CLERK =====
-  // Email principal del usuario
-  email         String   @db.VarChar(255)
-  // Nombre del usuario
-  firstName     String?  @db.VarChar(100)
-  // Apellido del usuario
-  lastName      String?  @db.VarChar(100)
-  // URL de imagen de perfil
-  profileImageUrl String? @db.Text
-  // Número de teléfono
-  phoneNumber   String?  @db.VarChar(20)
-  // Username único en Clerk
-  username      String?  @db.VarChar(100)
-  
-  // ===== ESTADO Y ACTIVIDAD =====
-  // Último login del usuario
-  lastLoginAt   DateTime? @db.Timestamptz
-  // Usuario activo/inactivo
-  isActive      Boolean  @default(true)
-  // Email verificado
-  emailVerified Boolean  @default(false)
-  // Teléfono verificado
-  phoneVerified Boolean  @default(false)
-  
-  // ===== COMPLIANCE GDPR =====
-  // Consentimiento para procesamiento de datos
-  gdprConsent   Boolean  @default(false)
-  // Fecha de consentimiento GDPR
-  gdprConsentDate DateTime? @db.Timestamptz
-  // Motivo legal para retención (contract, legal_obligation, etc.)
-  legalBasis    String   @db.VarChar(50) @default("contract")
-  // Fecha límite de retención (10 años desde creación)
-  retentionUntil DateTime @db.Timestamptz
-  // Solicitud de eliminación pendiente
-  deletionRequested Boolean @default(false)
-  // Fecha de solicitud de eliminación
-  deletionRequestedAt DateTime? @db.Timestamptz
-  
-  // ===== AUDITORÍA Y TRAZABILIDAD =====
-  // IP de registro
-  registrationIp String? @db.VarChar(45)
-  // IP de último acceso
-  lastAccessIp  String?  @db.VarChar(45)
-  // User Agent de último acceso
-  lastUserAgent String?  @db.Text
-  // Versión de datos (para sincronización)
-  dataVersion   Int      @default(1)
-  // Última sincronización con Clerk
-  lastSyncAt    DateTime @default(now()) @db.Timestamptz
-  
-  // ===== METADATOS ADICIONALES =====
-  // Datos adicionales de Clerk en JSON
-  clerkMetadata Json?    @db.Json
-  // Preferencias del usuario
-  preferences   Json?    @db.Json
-  
-  // ===== TIMESTAMPS =====
-  createdAt     DateTime @default(now()) @db.Timestamptz
-  updatedAt     DateTime @updatedAt @db.Timestamptz
-  
-  // ===== RELACIONES =====
-  // Relación con suscripciones (1:N)
-  subscriptions UserSubscription[] @relation("UserProfileSubscriptions")
-  // Relación con direcciones de facturación (1:N)
-  billingAddresses UserBillingAddress[] @relation("UserProfileBillingAddresses")
-  // Relación con logs de actividad (1:N)
-  activityLogs  UserActivityLog[] @relation("UserProfileActivityLogs")
-  // Relación con permisos (1:N)
-  permissions   UserPermission[] @relation("UserProfilePermissions")
-  
-  // ===== MAPEO A TABLA =====
-  @@map("user_profiles")
-  
-  // ===== ÍNDICES =====
-  @@index([clerkUserId])
-  @@index([email])
-  @@index([isActive])
-  @@index([lastLoginAt])
-  @@index([retentionUntil])
-  @@index([deletionRequested])
-  @@index([gdprConsent])
-  @@index([createdAt])
-  @@index([lastSyncAt])
 }
