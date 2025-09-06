@@ -1,6 +1,13 @@
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
+import { WebhookEvent } from '@clerk/nextjs/server';
+import { 
+  createUserProfile, 
+  updateUserProfile, 
+  handleUserDeletion,
+  logSessionActivity 
+} from '@/lib/services/userSyncService';
 
 // === INICIO ENDPOINT WEBHOOKS CLERK ===
 /**
@@ -53,7 +60,7 @@ function validateWebhookSignature(payload: string, headersList: any): boolean {
 }
 
 // Función para procesar evento user.created
-function processUserCreated(data: any) {
+async function processUserCreated(data: any, clientIP: string) {
   if (DEBUG_MODE) {
     console.log('🆕 Usuario creado:', {
       id: data.id,
@@ -64,12 +71,18 @@ function processUserCreated(data: any) {
     });
   }
   
-  // TODO: Aquí se implementará la lógica para guardar el usuario en la base de datos
-  // Por ahora solo logueamos el evento
+  // Crear perfil de usuario en la base de datos
+  const createResult = await createUserProfile(data, clientIP);
+  if (!createResult.success) {
+    console.error('❌ Error creando usuario:', createResult.error);
+    throw new Error('Error creating user profile');
+  }
+  
+  console.log('✅ Usuario creado exitosamente en BD:', createResult.userId);
 }
 
 // Función para procesar evento user.updated
-function processUserUpdated(data: any) {
+async function processUserUpdated(data: any) {
   if (DEBUG_MODE) {
     console.log('📝 Usuario actualizado:', {
       id: data.id,
@@ -80,11 +93,18 @@ function processUserUpdated(data: any) {
     });
   }
   
-  // TODO: Aquí se implementará la lógica para actualizar el usuario en la base de datos
+  // Actualizar perfil de usuario en la base de datos
+  const updateResult = await updateUserProfile(data);
+  if (!updateResult.success) {
+    console.error('❌ Error actualizando usuario:', updateResult.error);
+    throw new Error('Error updating user profile');
+  }
+  
+  console.log('✅ Usuario actualizado exitosamente en BD:', updateResult.userId);
 }
 
 // Función para procesar evento user.deleted
-function processUserDeleted(data: any) {
+async function processUserDeleted(data: any) {
   if (DEBUG_MODE) {
     console.log('🗑️ Usuario eliminado:', {
       id: data.id,
@@ -92,11 +112,18 @@ function processUserDeleted(data: any) {
     });
   }
   
-  // TODO: Aquí se implementará la lógica para marcar el usuario como eliminado
+  // Manejar eliminación de usuario con compliance GDPR
+  const deleteResult = await handleUserDeletion(data.id);
+  if (!deleteResult.success) {
+    console.error('❌ Error marcando usuario para eliminación:', deleteResult.error);
+    throw new Error('Error handling user deletion');
+  }
+  
+  console.log('✅ Usuario marcado para eliminación (GDPR):', deleteResult.userId);
 }
 
 // Función para procesar evento session.created (login)
-function processSessionCreated(data: any) {
+async function processSessionCreated(data: any, clientIP: string) {
   if (DEBUG_MODE) {
     console.log('🔐 Sesión iniciada:', {
       sessionId: data.id,
@@ -106,11 +133,18 @@ function processSessionCreated(data: any) {
     });
   }
   
-  // TODO: Aquí se implementará la lógica para registrar el login
+  // Registrar inicio de sesión para auditoría
+  const loginResult = await logSessionActivity(data, 'login', clientIP);
+  if (!loginResult.success) {
+    console.error('❌ Error registrando login:', loginResult.error);
+    // No lanzamos error aquí para no bloquear el webhook
+  } else {
+    console.log('✅ Login registrado exitosamente');
+  }
 }
 
 // Función para procesar evento session.ended (logout)
-function processSessionEnded(data: any) {
+async function processSessionEnded(data: any, clientIP: string) {
   if (DEBUG_MODE) {
     console.log('🚪 Sesión terminada:', {
       sessionId: data.id,
@@ -120,27 +154,34 @@ function processSessionEnded(data: any) {
     });
   }
   
-  // TODO: Aquí se implementará la lógica para registrar el logout
+  // Registrar cierre de sesión para auditoría
+  const logoutResult = await logSessionActivity(data, 'logout', clientIP);
+  if (!logoutResult.success) {
+    console.error('❌ Error registrando logout:', logoutResult.error);
+    // No lanzamos error aquí para no bloquear el webhook
+  } else {
+    console.log('✅ Logout registrado exitosamente');
+  }
 }
 
 // Función principal para procesar eventos
-function processClerkEvent(event: ClerkEvent) {
+async function processClerkEvent(event: ClerkEvent, clientIP: string) {
   try {
     switch (event.type) {
       case 'user.created':
-        processUserCreated(event.data);
+        await processUserCreated(event.data, clientIP);
         break;
       case 'user.updated':
-        processUserUpdated(event.data);
+        await processUserUpdated(event.data);
         break;
       case 'user.deleted':
-        processUserDeleted(event.data);
+        await processUserDeleted(event.data);
         break;
       case 'session.created':
-        processSessionCreated(event.data);
+        await processSessionCreated(event.data, clientIP);
         break;
       case 'session.ended':
-        processSessionEnded(event.data);
+        await processSessionEnded(event.data, clientIP);
         break;
       default:
         if (DEBUG_MODE) {
@@ -159,6 +200,7 @@ export async function POST(req: NextRequest) {
     // Rate limiting básico (TODO: implementar más robusto)
     const headersList = await headers();
     const userAgent = headersList.get('user-agent') || '';
+    const clientIP = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
     
     if (!userAgent.includes('Svix-Webhooks')) {
       return NextResponse.json(
@@ -196,7 +238,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Procesar el evento
-    processClerkEvent(event);
+    await processClerkEvent(event, clientIP);
 
     // Respuesta exitosa
     return NextResponse.json(
