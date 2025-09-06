@@ -8,6 +8,16 @@ import {
   handleUserDeletion,
   logSessionActivity 
 } from '@/lib/services/userSyncService';
+import {
+  logUserLogin,
+  logUserLogout,
+  detectSuspiciousLogins,
+  analyzeUserBehaviorPattern,
+  detectBotActivity,
+  validateGeographicConsistency,
+  extractClientIP,
+  extractUserAgent
+} from '@/lib/services/activityLogService';
 
 // === INICIO ENDPOINT WEBHOOKS CLERK ===
 /**
@@ -125,21 +135,83 @@ async function processUserDeleted(data: any) {
 // Función para procesar evento session.created (login)
 async function processSessionCreated(data: any, clientIP: string) {
   if (DEBUG_MODE) {
-    console.log('🔐 Sesión iniciada:', {
+    console.log('🔐 Nueva sesión creada:', {
       sessionId: data.id,
       userId: data.user_id,
-      createdAt: data.created_at,
+      createdAt: new Date(data.created_at * 1000).toISOString(),
       status: data.status
     });
   }
   
-  // Registrar inicio de sesión para auditoría
-  const loginResult = await logSessionActivity(data, 'login', clientIP);
-  if (!loginResult.success) {
-    console.error('❌ Error registrando login:', loginResult.error);
-    // No lanzamos error aquí para no bloquear el webhook
-  } else {
-    console.log('✅ Login registrado exitosamente');
+  try {
+    // Extraer metadatos de la petición
+    const headersList = await headers();
+    const userAgent = headersList.get('user-agent') || '';
+    const requestIP = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || clientIP;
+    
+    // Detectar actividad de bots
+    const botAnalysis = detectBotActivity(userAgent || '', {
+      headers: Object.fromEntries(headersList.entries()),
+      sessionData: data
+    });
+    
+    if (botAnalysis.isBot && botAnalysis.confidence > 70) {
+      console.warn('🤖 Posible actividad de bot detectada:', {
+        userId: data.user_id,
+        confidence: botAnalysis.confidence,
+        indicators: botAnalysis.indicators
+      });
+    }
+    
+    // Detectar logins sospechosos
+    const suspiciousAnalysis = await detectSuspiciousLogins(data.user_id, requestIP || clientIP);
+    if (suspiciousAnalysis.isSuspicious) {
+      console.warn('⚠️ Login sospechoso detectado:', {
+        userId: data.user_id,
+        reason: suspiciousAnalysis.reason,
+        recentLogins: suspiciousAnalysis.recentLogins.length
+      });
+    }
+    
+    // Registrar login con el nuevo servicio de activity logging
+    const sessionData: any = {
+      sessionId: data.id,
+      userId: data.user_id,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at || data.created_at,
+      lastActiveAt: data.last_active_at || data.created_at,
+      expireAt: data.expire_at || (data.created_at + 86400), // 24h por defecto
+      status: data.status
+    };
+    
+    const loginResult = await logUserLogin(
+      data.user_id,
+      data.id,
+      sessionData
+    );
+    
+    if (!loginResult.success) {
+      console.error('❌ Error registrando login avanzado:', loginResult.error);
+    } else {
+      console.log('✅ Login registrado exitosamente con análisis de seguridad');
+    }
+    
+    // Fallback al sistema anterior si el nuevo falla
+    if (!loginResult.success) {
+      const fallbackResult = await logSessionActivity(data, 'login', clientIP);
+      if (!fallbackResult.success) {
+        console.error('❌ Error en fallback de login:', fallbackResult.error);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Error en análisis de login:', error);
+    
+    // Fallback al sistema anterior en caso de error
+    const fallbackResult = await logSessionActivity(data, 'login', clientIP);
+    if (!fallbackResult.success) {
+      console.error('❌ Error en fallback de login:', fallbackResult.error);
+    }
   }
 }
 
@@ -154,13 +226,61 @@ async function processSessionEnded(data: any, clientIP: string) {
     });
   }
   
-  // Registrar cierre de sesión para auditoría
-  const logoutResult = await logSessionActivity(data, 'logout', clientIP);
-  if (!logoutResult.success) {
-    console.error('❌ Error registrando logout:', logoutResult.error);
-    // No lanzamos error aquí para no bloquear el webhook
-  } else {
-    console.log('✅ Logout registrado exitosamente');
+  try {
+    // Extraer metadatos de la petición
+    const headersList = await headers();
+    const userAgent = headersList.get('user-agent') || '';
+    
+    // Analizar patrones de comportamiento del usuario
+    const behaviorAnalysis = await analyzeUserBehaviorPattern(data.user_id);
+    if (behaviorAnalysis.riskScore > 50) {
+      console.warn('⚠️ Usuario con alto riesgo de seguridad:', {
+        userId: data.user_id,
+        riskScore: behaviorAnalysis.riskScore,
+        patterns: behaviorAnalysis.patterns,
+        recommendations: behaviorAnalysis.recommendations
+      });
+    }
+    
+    // Registrar logout con el nuevo servicio
+    const sessionData: any = {
+      sessionId: data.id,
+      userId: data.user_id,
+      createdAt: data.created_at,
+      updatedAt: data.updated_at || data.created_at,
+      lastActiveAt: data.last_active_at || data.created_at,
+      expireAt: data.expire_at || (data.created_at + 86400), // 24h por defecto
+      status: data.status
+    };
+    
+    const logoutResult = await logUserLogout(
+      data.user_id,
+      data.id,
+      sessionData
+    );
+    
+    if (!logoutResult.success) {
+      console.error('❌ Error registrando logout avanzado:', logoutResult.error);
+    } else {
+      console.log('✅ Logout registrado exitosamente con análisis de comportamiento');
+    }
+    
+    // Fallback al sistema anterior si el nuevo falla
+    if (!logoutResult.success) {
+      const fallbackResult = await logSessionActivity(data, 'logout', clientIP);
+      if (!fallbackResult.success) {
+        console.error('❌ Error en fallback de logout:', fallbackResult.error);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Error en análisis de logout:', error);
+    
+    // Fallback al sistema anterior en caso de error
+    const fallbackResult = await logSessionActivity(data, 'logout', clientIP);
+    if (!fallbackResult.success) {
+      console.error('❌ Error en fallback de logout:', fallbackResult.error);
+    }
   }
 }
 
