@@ -56,3 +56,5 @@ vscode
 .copias-en-zip-del-proyecto
 backup
 backup-posgresql-neon
+test-tools
+backups

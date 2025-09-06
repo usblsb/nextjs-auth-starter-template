@@ -48,7 +48,7 @@ next-env.d.ts
 /.clerk/
 
 # Carpetas de reglas de mis LLM y ajustes de configuración
-config
+
 reglas_llm
 vscode
 
@@ -65,3 +65,5 @@ backup
 
 backup-posgresql-neon
 .env.error
+test-tools
+backups

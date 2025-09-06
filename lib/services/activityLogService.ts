@@ -330,7 +330,7 @@ export async function detectSuspiciousLogins(userId: string, currentIP: string):
     const recentLogins = await prisma.userActivityLog.findMany({
       where: {
         userId,
-        eventType: 'login',
+        action: 'LOGIN',
         createdAt: {
           gte: twentyFourHoursAgo
         }
@@ -452,7 +452,7 @@ export async function analyzeUserBehaviorPattern(userId: string): Promise<{
 
     // Analizar intentos de login fallidos (si los hubiera)
      const failedLogins = activities.filter((a: any) => 
-       a.eventType === 'login_failed' || a.metadata?.success === false
+       a.action === 'LOGIN_FAILED' || a.metadata?.success === false
      );
 
     if (failedLogins.length > 10) {
@@ -694,7 +694,7 @@ export async function logUserLogin(
     try {
       const lastLogin = await prisma.userActivityLog.findFirst({
         where: {
-          clerkUserId: clerkUserId,
+          userId: clerkUserId,
           action: 'LOGIN'
         },
         orderBy: {
@@ -712,7 +712,7 @@ export async function logUserLogin(
     // Crear el registro de actividad
     const activityLog = await prisma.userActivityLog.create({
       data: {
-        clerkUserId: clerkUserId,
+        userId: clerkUserId,  // Usar userId como campo principal
         clerkSessionId: clerkSessionId || null,
         action: 'LOGIN',
         description: `Usuario ${clerkUserId} inició sesión`,
@@ -790,7 +790,7 @@ export async function logUserLogout(
       // Buscar el último login del usuario
       const lastLogin = await prisma.userActivityLog.findFirst({
         where: {
-          clerkUserId: clerkUserId,
+          userId: clerkUserId,
           action: 'LOGIN',
           ...(clerkSessionId && { clerkSessionId: clerkSessionId })
         },
@@ -816,7 +816,7 @@ export async function logUserLogout(
     // Crear el registro de actividad
     const activityLog = await prisma.userActivityLog.create({
       data: {
-        clerkUserId: clerkUserId,
+        userId: clerkUserId,  // Usar userId como campo principal
         clerkSessionId: clerkSessionId || null,
         action: 'LOGOUT',
         description: sessionDuration 
@@ -917,7 +917,8 @@ export async function logUserActivity(
     // Crear el registro de actividad
     const activityLog = await prisma.userActivityLog.create({
       data: {
-        clerkUserId: data.clerkUserId,
+        userId: data.clerkUserId,  // Usar userId como campo principal
+        clerkUserId: data.clerkUserId,  // También llenar el nuevo campo opcional
         clerkSessionId: data.clerkSessionId || null,
         action: data.action,
         description: description,
@@ -1181,7 +1182,7 @@ export async function logUserLoginWithLocation(
     try {
       const lastLogin = await prisma.userActivityLog.findFirst({
         where: {
-          clerkUserId: clerkUserId,
+          userId: clerkUserId,
           action: 'LOGIN'
         },
         orderBy: {
@@ -1199,7 +1200,7 @@ export async function logUserLoginWithLocation(
     // Crear el registro de actividad
     const activityLog = await prisma.userActivityLog.create({
       data: {
-        clerkUserId: clerkUserId,
+        userId: clerkUserId,  // Usar userId como campo principal
         clerkSessionId: clerkSessionId || null,
         action: 'LOGIN',
         description: `Usuario ${clerkUserId} inició sesión${metadata.location?.city ? ` desde ${metadata.location.city}, ${metadata.location.country}` : ''}`,
