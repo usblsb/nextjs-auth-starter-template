@@ -4,13 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 15 application with Clerk authentication, built as an online electronics education platform. The project uses TypeScript, Tailwind CSS 4, and Prisma with PostgreSQL.
+This is a Next.js 15 application with Clerk authentication, built as an online
+electronics education platform. The project uses TypeScript, Tailwind CSS 4,
+Stripe, and Prisma with PostgreSQL 17.
+
+## Project explication
+
+The project consists of two PostgreSQL databases hosted on NEON.COM.
+
+The database [DB1], which is used in this APP, stores user data, log records, payments, and subscriptions, all obtained from CLERK and STRIPE.
+The database [DB2] stores slides, lessons, and courses content and is read-only.
+
+This project displays content from database [DB2]. Depending on the user status, more or less content is shown, for example:
+• Users without login: see the OPEN content of the academy (GOOGLE ONLY SEES THIS CONTENT).
+• FREE users: see the OPEN content and the FREE content.
+• PREMIUM users: see the FREE and PREMIUM content.
 
 ## Key Technologies
 
 - **Framework**: Next.js 15.3.4 with App Router
 - **Authentication**: Clerk 6.22.0 with Spanish localization (esES)
-- **Database**: PostgreSQL 17 with Prisma ORM
+- **Database [DB1]**: PostgreSQL 17 with Prisma ORM
 - **Styling**: Tailwind CSS 4.1.11
 - **Package Manager**: pnpm (required - do not use npm or yarn)
 
@@ -122,6 +136,15 @@ From `.trae/rules/project_rules.md`:
 - Test authentication flows in development
 - Verify database migrations with `pnpm db:push`
 - Check Prisma schema validation before deployment
-- Use NGROK túnel seguro "https://59cb2acddbb6.ngrok-free.app -> http://localhost:3002 "
-- Ngrok run : "ngrok http http://localhost:3002"
+- Use NGROK túnel seguro "https://[URL-VARIABLE].ngrok-free.app -> http://localhost:3000 "
+- Ngrok run en la ip de NExtJS : "ngrok http http://localhost:3000"
 - NGrok parar agente: https://dashboard.ngrok.com/agents
+
+## RESUMEN
+
+Arranca NextJS local --> abre ngrok con la IP local de NextJS `ngrok http 3000` -->
+copia URL HTTPS de Forwarding -->
+entra en Clerk Dashboard --> pega URL en webhook con esta terminacion (/api/webhooks/clerk) -->
+haz login/logout en frontend -->
+verifica en terminal de ngrok que llega POST -->
+si 200 OK --> NEON guarda log de login/logout en la tabla de registro de LOGS.

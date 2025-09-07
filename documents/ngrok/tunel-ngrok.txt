@@ -55,3 +55,44 @@ entra en Clerk Dashboard --> pega URL en webhook con esta terminacion (/api/webh
 haz login/logout en frontend --> 
 verifica en terminal de ngrok que llega POST --> 
 si 200 OK --> NEON guarda log de login/logout en la tabla de registro de LOGS.
+
+---
+### 🛡️ Nivel de Seguridad Actual
+En Producción : MEDIO-ALTO ✅
+
+- Validación de firma activada
+- Verificación de User-Agent
+- Solo Clerk puede enviar webhooks válidos
+En Desarrollo (ngrok) : BAJO ⚠️
+
+- Validación de firma desactivada
+- URL pública sin autenticación adicional
+- Vulnerable a webhooks maliciosos
+### 🔒 Recomendaciones de Seguridad
+1. 1.
+   URGENTE: Activar Validación en Desarrollo
+// Siempre validar firma, independiente del entorno
+if (!validateWebhookSignature(payload, headersList)) {
+  return NextResponse.json({ error: 'Firma inválida' }, { status: 401 });
+}
+---
+2.
+Implementar Rate Limiting Robusto
+// Limitar requests por IP
+const rateLimiter = new Map();
+
+- 3.
+Whitelist de IPs de Clerk
+
+- Verificar que el request venga de IPs oficiales de Clerk
+- 4.
+Monitoreo de Seguridad
+
+- Alertas por intentos de acceso no autorizados
+- Logs detallados de todos los requests
+- 5.
+Para Producción: Evitar ngrok
+
+- Usar servicios como Vercel, Railway, o Heroku
+- Configurar HTTPS nativo
+- Implementar WAF (Web Application Firewall).
