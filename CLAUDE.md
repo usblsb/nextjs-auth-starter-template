@@ -112,8 +112,9 @@ Required environment variables (see `.env.example`):
 From `.trae/rules/project_rules.md`:
 
 - Always use pnpm for package management
-- Use Neon.com MCP for database operations
-- Use Context7 MCP to learn about module functionality
+- Use Stripe MCP (HTTP): api key configurada en .env STRIPE_API_KEY
+- Use Neon MCP (local): for database operations - Instalado y configurado con tu
+  API key
 
 ## Testing and Quality
 
@@ -121,3 +122,6 @@ From `.trae/rules/project_rules.md`:
 - Test authentication flows in development
 - Verify database migrations with `pnpm db:push`
 - Check Prisma schema validation before deployment
+- Use NGROK túnel seguro "https://59cb2acddbb6.ngrok-free.app -> http://localhost:3002 "
+- Ngrok run : "ngrok http http://localhost:3002"
+- NGrok parar agente: https://dashboard.ngrok.com/agents

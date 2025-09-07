@@ -1,0 +1,57 @@
+Documento de ayuda que explica como exponer la aplicación NextJS que está corriendo localmente en `http://localhost:3000/` usando ngrok, para asi registrar en NEON.COM en la tabla de logs los accesos de login y logout de los usuarios. 
+
+Para hacer eso necesitas usar el siguiente comando para arrancar NGROK:
+
+```bash
+ngrok http 3000
+```
+
+O alternativamente:
+
+```bash
+ngrok http http://localhost:3000
+```
+
+**Pasos para verificar la ip que necesitamos en el webhook de CLERK:**
+
+En la ventana de terminal que se ha abierto te aparece algo similar a:
+
+ngrok     (Ctrl+C to quit)
+   
+🫶 Using ngrok for OSS? Request a community license: https://ngrok.com/r/oss                                                   
+Session Status                online                                                                                           
+Account                       Juan Luis Martel - @USBLSB (Plan: Free)                                                          
+Version                       3.27.0                                                                                           
+Region                        Europe (eu)                                                                                      
+Latency                       64ms                                                                                             
+Web Interface                 http://127.0.0.1:4040                                                                            
+Forwarding                    https://b70595b2a97e.ngrok-free.app -> http://localhost:3000                                     
+    
+
+2. **Copia la URL de Forwarding HTTPS** que ngrok te proporciona (algo como `https://b70595b2a97e.ngrok-free.app`)
+
+3. ** Entra en CLERK y Actualiza el webhook en Clerk Dashboard:**
+   - Ve a dashboard.clerk.com
+   - Navega a la sección de Webhooks 
+   - Actualiza la URL del webhook a: `https://b70595b2a97e.ngrok-free.app/api/webhooks/clerk`
+   - Fijate que es la URL+/api/webhooks/clerk
+
+4. **Verifica que el endpoint esté funcionando:**
+   - La URL actual `https://b70595b2a97e.ngrok-free.app/api/webhooks/clerk` haciendo login o logout, vas a ver en la terminal donde ejecutastes ngrok http http://localhost:3000 el log que muestra algo asi:
+
+HTTP Requests                                                                                       
+14:20:07.876 WEST POST /api/webhooks/clerk       200 OK                                                                
+14:19:16.567 WEST POST /api/webhooks/clerk       200 OK   
+-------------  
+200 OK significa que Ngrok ha enviado a /api/webhooks/clerk de nuestra APP de next la informacion del usuario, y nuestra app hace los cambios en la base de datos de NEON.COM manteniendo asi un registro.
+
+**Nota importante:** Cada vez que reinicies ngrok o salgas de la terminal, la URL que nos da nGROK cambiará y tendrás que actualizar el webhook en Clerk Dashboard nuevamente. 
+Para URLs permanentes, considera usar ngrok con una cuenta de pago o desplegar la aplicación en un servicio como Vercel.
+		
+## RESUMEN
+Arranca NextJS local --> abre ngrok con la IP local de NextJS `ngrok http 3000` --> 
+copia URL HTTPS de Forwarding --> 
+entra en Clerk Dashboard --> pega URL en webhook con esta terminacion (/api/webhooks/clerk) --> 
+haz login/logout en frontend --> 
+verifica en terminal de ngrok que llega POST --> 
+si 200 OK --> NEON guarda log de login/logout en la tabla de registro de LOGS.
