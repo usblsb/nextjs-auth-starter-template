@@ -5,7 +5,7 @@ import ProfileSection from "./sections/profile-section";
 import SecuritySection from "./sections/security-section";
 import BillingSection from "@/app/components/dashboard/sections/billing-section";
 
-type DashboardSection = "profile" | "security" | "billing";
+type DashboardSection = "profile" | "security" | "billing" | "demo";
 
 interface DashboardContentProps {
 	activeSection: DashboardSection;

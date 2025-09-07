@@ -1,16 +1,48 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { subscriptionMiddleware } from "@/lib/middleware/subscriptionMiddleware";
 
-// Definir las rutas que requieren autenticación
-// Solo la ruta /dashboard y sus subrutas necesitan login
-const isProtectedRoute = createRouteMatcher(["/web-dashboard(.*)"]);
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+// Definir las rutas que requieren autenticación básica de Clerk
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/sign-out(.*)"]);
 
-// Middleware de Clerk que maneja la autenticación
+// Middleware integrado: Clerk Authentication + Subscription Access Control
 export default clerkMiddleware(async (auth, req) => {
-	// Solo proteger las rutas definidas en isProtectedRoute
-	// Todas las demás rutas son públicas (incluyendo /, /sign-in, /sign-out, etc.)
-	if (isProtectedRoute(req) && !isPublicRoute(req)) {
-		await auth.protect();
+	try {
+		// 1. Obtener información de autenticación de Clerk
+		const { userId } = await auth();
+		
+		// 2. Las rutas públicas de autenticación siempre pasan
+		if (isPublicRoute(req)) {
+			return NextResponse.next();
+		}
+		
+		// 3. Verificar acceso basado en suscripción
+		const subscriptionCheck = await subscriptionMiddleware(req, userId);
+		
+		if (subscriptionCheck.shouldRedirect && subscriptionCheck.redirectUrl) {
+			// Crear respuesta de redirección con información de acceso
+			const response = NextResponse.redirect(new URL(subscriptionCheck.redirectUrl, req.url));
+			
+			// Agregar headers informativos para debugging
+			if (subscriptionCheck.accessInfo) {
+				response.headers.set('X-Access-Required', subscriptionCheck.accessInfo.requiredLevel);
+				response.headers.set('X-User-Level', subscriptionCheck.accessInfo.userLevel);
+				if (subscriptionCheck.accessInfo.reason) {
+					response.headers.set('X-Access-Reason', subscriptionCheck.accessInfo.reason);
+				}
+			}
+			
+			return response;
+		}
+		
+		// 4. Si llegamos aquí, el usuario tiene acceso - continuar con la request
+		return NextResponse.next();
+		
+	} catch (error) {
+		console.error('❌ Middleware error:', error);
+		
+		// En caso de error, redireccionar a página de error o login
+		return NextResponse.redirect(new URL('/sign-in?error=middleware', req.url));
 	}
 });
 
