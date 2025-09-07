@@ -3,8 +3,9 @@
 import { useState } from "react";
 import ProfileSection from "./sections/profile-section";
 import SecuritySection from "./sections/security-section";
+import BillingSection from "@/app/components/dashboard/sections/billing-section";
 
-type DashboardSection = "profile" | "security";
+type DashboardSection = "profile" | "security" | "billing";
 
 interface DashboardContentProps {
 	activeSection: DashboardSection;
@@ -46,12 +47,16 @@ export default function DashboardContent({
 				<h1 className="text-2xl font-semibold text-gray-900">
 					{activeSection === "profile"
 						? "Mi Perfil"
-						: "Configuración de Seguridad"}
+						: activeSection === "security"
+						? "Configuración de Seguridad"
+						: "Facturación y Suscripción"}
 				</h1>
 				<p className="mt-1 text-sm text-gray-600">
 					{activeSection === "profile"
 						? "Gestiona tu información personal y preferencias de cuenta"
-						: "Administra tu contraseña y sesiones activas"}
+						: activeSection === "security"
+						? "Administra tu contraseña y sesiones activas"
+						: "Gestiona tu suscripción, métodos de pago y acceso a contenido premium"}
 				</p>
 			</div>
 
@@ -74,6 +79,14 @@ export default function DashboardContent({
 
 						{activeSection === "security" && (
 							<SecuritySection
+								user={user}
+								onError={handleError}
+								onLoading={handleLoading}
+							/>
+						)}
+
+						{activeSection === "billing" && (
+							<BillingSection
 								user={user}
 								onError={handleError}
 								onLoading={handleLoading}

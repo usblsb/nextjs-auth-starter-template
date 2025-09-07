@@ -12,7 +12,7 @@ interface CustomDashboardProps {
   };
 }
 
-type DashboardSection = 'profile' | 'security';
+type DashboardSection = 'profile' | 'security' | 'billing';
 
 interface DashboardState {
   activeSection: DashboardSection;
