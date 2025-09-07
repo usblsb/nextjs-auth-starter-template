@@ -17,6 +17,7 @@
     "@clerk/localizations": "^3.24.0",
     "@clerk/nextjs": "6.22.0",
     "@prisma/client": "6.15.0",
+    "@stripe/stripe-js": "^7.9.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^24.0.3",
     "@types/pg": "^8.15.5",
@@ -32,8 +33,12 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-syntax-highlighter": "^15.6.1",
+    "stripe": "^18.5.0",
     "svix": "^1.76.1",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5"
   }
 }
