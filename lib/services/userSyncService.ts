@@ -10,12 +10,9 @@ const DEBUG_MODE = process.env.NODE_ENV === 'development';
 
 // === INSTANCIA DE PRISMA CLIENT ===
 // Cliente de Prisma con configuración de logs condicional
-const prismaClient = new PrismaClient({
+const prisma = new PrismaClient({
   log: DEBUG_MODE ? ['query', 'info', 'warn', 'error'] : ['error'],
 });
-
-// Type assertion para acceder a las propiedades correctas
-const prisma = prismaClient as any;
 
 // Tipos para los eventos de Clerk
 interface ClerkUserData {
@@ -108,7 +105,7 @@ export async function createUserProfile(
     gdprRetentionDate.setFullYear(gdprRetentionDate.getFullYear() + 10);
     
     // Crear perfil de usuario
-    const userProfile = await prisma.UserProfile.create({
+    const userProfile = await prisma.userProfile.create({
       data: {
         clerkUserId: userData.id,
         email: primaryEmail,
@@ -177,7 +174,7 @@ export async function updateUserProfile(
     }
 
     // Buscar usuario existente
-    const existingUser = await prisma.UserProfile.findUnique({
+    const existingUser = await prisma.userProfile.findUnique({
       where: { clerkUserId: userData.id }
     });
 
@@ -202,7 +199,7 @@ export async function updateUserProfile(
     if (existingUser.profileImageUrl !== userData.image_url) changes.push(`avatar: ${existingUser.profileImageUrl} → ${userData.image_url}`);
 
     // Actualizar usuario
-    const updatedUser = await prisma.UserProfile.update({
+    const updatedUser = await prisma.userProfile.update({
       where: { clerkUserId: userData.id },
       data: {
         email: primaryEmail,
@@ -253,7 +250,7 @@ export async function handleUserDeletion(
 ): Promise<{ success: boolean; userId?: string; error?: string }> {
   try {
     // Buscar usuario existente
-    const existingUser = await prisma.UserProfile.findUnique({
+    const existingUser = await prisma.userProfile.findUnique({
       where: { clerkUserId: clerkUserId }
     });
 
@@ -266,7 +263,7 @@ export async function handleUserDeletion(
     }
 
     // Marcar usuario como eliminado (eliminación lógica)
-    const updatedUser = await prisma.UserProfile.update({
+    const updatedUser = await prisma.userProfile.update({
       where: { clerkUserId: clerkUserId },
       data: {
         isActive: false,
@@ -316,7 +313,7 @@ export async function syncExistingUsers(
     for (const userData of clerkUsers) {
       try {
         // Verificar si el usuario ya existe
-        const existingUser = await prisma.UserProfile.findUnique({
+        const existingUser = await prisma.userProfile.findUnique({
           where: { clerkUserId: userData.id }
         });
 
@@ -377,7 +374,7 @@ export async function logSessionActivity(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Buscar usuario
-    const user = await prisma.UserProfile.findUnique({
+    const user = await prisma.userProfile.findUnique({
       where: { clerkUserId: sessionData.user_id }
     });
 
@@ -432,7 +429,7 @@ export async function cleanupGDPRData(): Promise<{ success: boolean; cleaned: nu
     const now = new Date();
     
     // Buscar usuarios con datos expirados
-    const expiredUsers = await prisma.UserProfile.findMany({
+    const expiredUsers = await prisma.userProfile.findMany({
       where: {
         retentionUntil: {
           lt: new Date()
@@ -444,7 +441,7 @@ export async function cleanupGDPRData(): Promise<{ success: boolean; cleaned: nu
     let cleanedCount = 0;
 
     for (const user of expiredUsers) {
-      await prisma.UserProfile.update({
+      await prisma.userProfile.update({
         where: { id: user.id },
         data: {
           // Anonimizar datos personales

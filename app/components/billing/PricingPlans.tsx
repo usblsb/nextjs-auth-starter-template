@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { PricingCard } from './PricingCard';
 import { LoadingSpinner } from './LoadingSpinner';
+import { SubscriptionModal } from './SubscriptionModal';
 import type { BillingPlan } from '@/lib/stripe/types';
 
 interface PricingPlansProps {
@@ -28,9 +29,11 @@ export function PricingPlans({
   userEmail,
   onSubscriptionChange 
 }: PricingPlansProps) {
+  const [selectedPlan, setSelectedPlan] = useState<BillingPlan | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const handleSelectPlan = async (plan: BillingPlan) => {
+  const handleSelectPlan = (plan: BillingPlan) => {
     if (!userEmail) {
       console.error('User email not available');
       return;
@@ -42,10 +45,25 @@ export function PricingPlans({
       return;
     }
 
-    setLoadingPlan(plan.id);
+    // Abrir modal de suscripción
+    setSelectedPlan(plan);
+    setShowModal(true);
+  };
 
+  const handleSubscriptionSuccess = () => {
+    setShowModal(false);
+    setSelectedPlan(null);
+    onSubscriptionChange?.();
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedPlan(null);
+  };
+
+  const handleOldFlow = async (plan: BillingPlan) => {
+    // Mantener el flujo anterior como fallback
     try {
-      // Crear suscripción
       const response = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
         headers: {
@@ -135,7 +153,7 @@ export function PricingPlans({
           <PricingCard
             plan={freePlan}
             isCurrentPlan={currentPlan?.id === freePlan.id}
-            isLoading={loadingPlan === freePlan.id}
+            isLoading={false}
             onSelect={handleSelectPlan}
             buttonText={
               currentPlan?.id === freePlan.id 
@@ -152,13 +170,11 @@ export function PricingPlans({
             plan={plan}
             isCurrentPlan={currentPlan?.id === plan.id}
             isRecommended={plan.isRecommended}
-            isLoading={loadingPlan === plan.id}
+            isLoading={false}
             onSelect={handleSelectPlan}
             buttonText={
               currentPlan?.id === plan.id
                 ? 'Plan Actual'
-                : loadingPlan === plan.id
-                ? 'Procesando...'
                 : 'Seleccionar Plan'
             }
           />
@@ -193,6 +209,17 @@ export function PricingPlans({
           </div>
         </div>
       </div>
+
+      {/* Modal de suscripción */}
+      {selectedPlan && (
+        <SubscriptionModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          plan={selectedPlan}
+          userEmail={userEmail}
+          onSuccess={handleSubscriptionSuccess}
+        />
+      )}
     </div>
   );
 }

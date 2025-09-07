@@ -5,7 +5,7 @@
  */
 
 import { NextRequest } from 'next/server';
-import { getUserSubscriptionStatus } from '@/lib/services/billingService';
+import { getUserSubscriptionForMiddleware } from './subscriptionService';
 
 export type AccessLevel = 'OPEN' | 'FREE' | 'PREMIUM';
 
@@ -93,20 +93,22 @@ export function getRequiredAccessLevel(pathname: string): AccessLevel | null {
 
 /**
  * Verifica si el usuario tiene acceso suficiente para una ruta
+ * Versión optimizada para middleware que no usa Prisma directamente
  */
 export async function checkSubscriptionAccess(
   clerkUserId: string,
-  requiredLevel: AccessLevel
+  requiredLevel: AccessLevel,
+  baseUrl: string
 ): Promise<{
   hasAccess: boolean;
   userLevel: AccessLevel;
   reason?: string;
 }> {
   try {
-    // Obtener estado de suscripción del usuario
-    const subscriptionStatus = await getUserSubscriptionStatus(clerkUserId);
+    // Obtener estado de suscripción usando el servicio para middleware
+    const subscriptionInfo = await getUserSubscriptionForMiddleware(clerkUserId, baseUrl);
     
-    const userLevel = subscriptionStatus.accessLevel;
+    const userLevel = subscriptionInfo.accessLevel;
     
     // Definir jerarquía de acceso: OPEN < FREE < PREMIUM
     const accessHierarchy: Record<AccessLevel, number> = {
@@ -203,7 +205,8 @@ export async function subscriptionMiddleware(
   
   // Si hay usuario autenticado, verificar nivel de suscripción
   if (clerkUserId) {
-    const accessCheck = await checkSubscriptionAccess(clerkUserId, requiredLevel);
+    const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    const accessCheck = await checkSubscriptionAccess(clerkUserId, requiredLevel, baseUrl);
     
     if (!accessCheck.hasAccess) {
       return {

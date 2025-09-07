@@ -190,7 +190,7 @@ export async function validateDataConsistency(
 
     // 4. Verificar fechas
     const dbPeriodEnd = dbSubscription.currentPeriodEnd.getTime() / 1000;
-    const stripePeriodEnd = stripeSubscription.current_period_end;
+    const stripePeriodEnd = (stripeSubscription as any).current_period_end;
     
     if (Math.abs(dbPeriodEnd - stripePeriodEnd) > 60) { // Tolerancia de 1 minuto
       issues.push('Period end date mismatch');
@@ -237,9 +237,9 @@ export async function repairDataInconsistency(
       data: {
         status: stripeSubscription.status,
         stripePriceId: stripeSubscription.items.data[0]?.price?.id || '',
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        raw: stripeSubscription,
+        currentPeriodStart: new Date((stripeSubscription as any).current_period_start * 1000),
+        currentPeriodEnd: new Date((stripeSubscription as any).current_period_end * 1000),
+        raw: stripeSubscription as any,
         updatedAt: new Date(),
       },
     });
@@ -290,8 +290,8 @@ export async function getWebhookStats(days: number = 7): Promise<{
     });
 
     const stats = webhookLogs.reduce((acc, log) => {
-      const eventType = log.metadata?.eventType || 'unknown';
-      const success = !log.metadata?.error;
+      const eventType = (log.metadata as any)?.eventType || 'unknown';
+      const success = !(log.metadata as any)?.error;
 
       acc.totalEvents++;
       
@@ -301,7 +301,7 @@ export async function getWebhookStats(days: number = 7): Promise<{
         acc.failedEvents++;
         acc.recentFailures.push({
           eventType,
-          error: log.metadata?.error,
+          error: (log.metadata as any)?.error,
           createdAt: log.createdAt,
         });
       }

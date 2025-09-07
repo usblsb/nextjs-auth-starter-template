@@ -51,7 +51,6 @@ export async function GET(req: NextRequest) {
       return {
         ...plan,
         pricing: {
-          basePrice: plan.price,
           currency: plan.currency,
           interval: plan.interval,
           ...taxCalculation,

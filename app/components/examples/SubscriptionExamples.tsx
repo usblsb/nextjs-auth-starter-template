@@ -149,7 +149,7 @@ export default function SubscriptionExamples() {
               </h5>
               <ul className="text-sm text-purple-800 dark:text-purple-200 space-y-1">
                 <li>• Exportación de circuitos a formatos profesionales (SPICE, Gerber)</li>
-                <li>• Biblioteca de componentes premium (>10,000 componentes)</li>
+                <li>• Biblioteca de componentes premium (&gt;10,000 componentes)</li>
                 <li>• Simulación de PCB en 3D</li>
                 <li>• Soporte técnico prioritario 24/7</li>
                 <li>• Certificados de cursos acreditados</li>

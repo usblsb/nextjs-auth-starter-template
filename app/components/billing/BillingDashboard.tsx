@@ -161,7 +161,7 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
       </section>
 
       {/* Portal de Stripe */}
-      {subscriptionStatus.capabilities?.canAccessPortal && (
+      {subscriptionStatus.isSubscribed && (
         <section>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 p-6">
             <div className="flex items-center justify-between">
@@ -180,23 +180,20 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
       )}
 
       {/* Planes disponibles */}
-      {(!subscriptionStatus.user.hasSubscription || subscriptionStatus.capabilities?.canUpgrade) && (
+      {!subscriptionStatus.isSubscribed && (
         <section>
           <div className="mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {subscriptionStatus.user.hasSubscription ? 'Actualizar Plan' : 'Elige tu Plan'}
+              {'Elige tu Plan'}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              {subscriptionStatus.user.hasSubscription 
-                ? 'Mejora tu suscripción para acceder a más contenido'
-                : 'Selecciona el plan que mejor se adapte a tus necesidades'
-              }
+              Selecciona el plan que mejor se adapte a tus necesidades
             </p>
           </div>
           
           <PricingPlans
             plans={availablePlans}
-            currentPlan={subscriptionStatus.subscription?.currentPlan}
+            currentPlan={subscriptionStatus.currentPlan}
             userEmail={user?.primaryEmailAddress?.emailAddress}
             onSubscriptionChange={handleSubscriptionChange}
           />
@@ -207,7 +204,7 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
       <section>
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-            Tu Nivel de Acceso: {subscriptionStatus.contentAccess?.level}
+            Tu Nivel de Acceso: {subscriptionStatus.accessLevel}
           </h3>
           
           <div className="grid md:grid-cols-2 gap-6">
@@ -216,22 +213,21 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
                 ✅ Contenido Accesible
               </h4>
               <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                {subscriptionStatus.contentAccess?.accessibleContent.map((content: string) => (
-                  <li key={content}>• Contenido {content}</li>
-                ))}
+                <li>• Contenido básico según tu plan</li>
               </ul>
             </div>
             
-            {subscriptionStatus.contentAccess?.restrictedContent.length > 0 && (
+            {!subscriptionStatus.isSubscribed && (
               <div>
                 <h4 className="font-medium text-red-700 dark:text-red-400 mb-2">
-                  🔒 Contenido Restringido
+                  🔒 Contenido Premium
                 </h4>
                 <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                  {subscriptionStatus.contentAccess.restrictedContent.map((content: string) => (
-                    <li key={content}>• Contenido {content}</li>
-                  ))}
+                  <li>• Contenido premium disponible con suscripción</li>
                 </ul>
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                  💡 Suscríbete para desbloquear este contenido
+                </p>
               </div>
             )}
           </div>

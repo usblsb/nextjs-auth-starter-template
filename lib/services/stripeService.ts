@@ -78,11 +78,21 @@ export async function createSubscription(
   data: CreateSubscriptionData
 ): Promise<CreateSubscriptionResponse> {
   try {
-    // 1. Crear o recuperar customer
+    // 1. Transformar dirección a formato Stripe
+    const stripeAddress: Stripe.AddressParam = {
+      country: data.billingAddress.country,
+      postal_code: data.billingAddress.postalCode, // ✅ CORRECCIÓN: postalCode → postal_code
+      city: data.billingAddress.city,
+      line1: data.billingAddress.line1,
+      line2: data.billingAddress.line2 || undefined,
+      state: data.billingAddress.state || undefined,
+    };
+
+    // 2. Crear o recuperar customer
     const customerResult = await createOrGetCustomer({
       email: data.email,
       userId: data.userId,
-      address: data.billingAddress,
+      address: stripeAddress,
     });
 
     if (!customerResult.success || !customerResult.customer) {
@@ -94,13 +104,13 @@ export async function createSubscription(
 
     const customer = customerResult.customer;
 
-    // 2. Determinar configuración fiscal
+    // 3. Determinar configuración fiscal
     const taxInfo = determineTaxConfiguration({
       country: data.billingAddress.country,
       postalCode: data.billingAddress.postalCode,
     });
 
-    // 3. Preparar datos de suscripción base
+    // 4. Preparar datos de suscripción base
     let subscriptionData: Stripe.SubscriptionCreateParams = {
       customer: customer.id,
       items: [
@@ -122,18 +132,18 @@ export async function createSubscription(
       },
     };
 
-    // 4. Aplicar configuración fiscal
+    // 5. Aplicar configuración fiscal
     subscriptionData = await applyTaxToSubscription(subscriptionData, taxInfo);
 
-    // 5. Crear suscripción
+    // 6. Crear suscripción
     const subscription = await stripe.subscriptions.create(subscriptionData);
 
-    // 6. Extraer client_secret para el frontend
+    // 7. Extraer client_secret para el frontend
     let clientSecret: string | undefined;
     if (subscription.latest_invoice && typeof subscription.latest_invoice === 'object') {
-      const paymentIntent = subscription.latest_invoice.payment_intent;
+      const paymentIntent = (subscription.latest_invoice as any).payment_intent;
       if (paymentIntent && typeof paymentIntent === 'object') {
-        clientSecret = paymentIntent.client_secret || undefined;
+        clientSecret = (paymentIntent as any).client_secret || undefined;
       }
     }
 

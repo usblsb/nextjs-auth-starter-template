@@ -25,7 +25,7 @@ export const stripeConfig = {
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   
   // Configuración API
-  apiVersion: '2024-12-18.acacia' as const,
+  apiVersion: '2025-08-27.basil' as const,
   
   // URLs del sistema
   urls: {

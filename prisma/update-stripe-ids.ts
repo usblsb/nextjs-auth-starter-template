@@ -46,7 +46,7 @@ async function validateStripeIds() {
       // Validar precio
       if (mapping.priceId !== 'price_XXXXXX') {
         const price = await stripe.prices.retrieve(mapping.priceId);
-        console.log(`✅ Precio válido: ${price.unit_amount/100} ${price.currency} (${price.id})`);
+        console.log(`✅ Precio válido: ${(price.unit_amount || 0)/100} ${price.currency} (${price.id})`);
       } else {
         console.log(`⚠️  ${planKey}: Precio ID placeholder - actualizar manualmente`);
       }

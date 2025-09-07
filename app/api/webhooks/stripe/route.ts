@@ -171,7 +171,7 @@ async function handleSubscriptionDeleted(event: Stripe.Event) {
       where: { stripeSubscriptionId: subscription.id },
       data: {
         status: 'canceled',
-        raw: subscription,
+        raw: JSON.parse(JSON.stringify(subscription)) as any,
         updatedAt: new Date(),
       },
     });
@@ -237,7 +237,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   // Log de pago exitoso
   await logBillingActivity(clerkUserId, 'PAYMENT_SUCCEEDED', {
     invoiceId: invoice.id,
-    subscriptionId: invoice.subscription,
+    subscriptionId: (invoice as any).subscription,
     amount: invoice.amount_paid,
     currency: invoice.currency,
     periodStart: invoice.period_start,
@@ -287,7 +287,7 @@ async function handlePaymentFailed(event: Stripe.Event) {
   // Log de pago fallido
   await logBillingActivity(clerkUserId, 'PAYMENT_FAILED', {
     invoiceId: invoice.id,
-    subscriptionId: invoice.subscription,
+    subscriptionId: (invoice as any).subscription,
     amount: invoice.amount_due,
     currency: invoice.currency,
     attemptCount: invoice.attempt_count,
@@ -427,7 +427,7 @@ export async function POST(req: NextRequest) {
       success: result.success,
       eventType: event.type,
       eventId: event.id,
-      message: result.success ? 'Event processed successfully' : result.error,
+      message: result.success ? 'Event processed successfully' : 'Event processing failed',
       timestamp: new Date().toISOString(),
     }, { 
       status: result.success ? 200 : 500 

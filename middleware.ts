@@ -5,6 +5,12 @@ import { subscriptionMiddleware } from "@/lib/middleware/subscriptionMiddleware"
 // Definir las rutas que requieren autenticación básica de Clerk
 const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/sign-out(.*)"]);
 
+// Definir las rutas de API interna que no requieren autenticación
+const isInternalApiRoute = createRouteMatcher(["/api/internal/(.*)"]);
+
+// Definir las rutas de API públicas de Stripe (planes, etc)
+const isPublicStripeApiRoute = createRouteMatcher(["/api/stripe/plans"]);
+
 // Middleware integrado: Clerk Authentication + Subscription Access Control
 export default clerkMiddleware(async (auth, req) => {
 	try {
@@ -16,7 +22,17 @@ export default clerkMiddleware(async (auth, req) => {
 			return NextResponse.next();
 		}
 		
-		// 3. Verificar acceso basado en suscripción
+		// 3. Las rutas de API interna también pasan (para uso interno del middleware)
+		if (isInternalApiRoute(req)) {
+			return NextResponse.next();
+		}
+		
+		// 4. Las rutas de API públicas de Stripe también pasan
+		if (isPublicStripeApiRoute(req)) {
+			return NextResponse.next();
+		}
+		
+		// 5. Verificar acceso basado en suscripción
 		const subscriptionCheck = await subscriptionMiddleware(req, userId);
 		
 		if (subscriptionCheck.shouldRedirect && subscriptionCheck.redirectUrl) {
@@ -35,7 +51,7 @@ export default clerkMiddleware(async (auth, req) => {
 			return response;
 		}
 		
-		// 4. Si llegamos aquí, el usuario tiene acceso - continuar con la request
+		// 6. Si llegamos aquí, el usuario tiene acceso - continuar con la request
 		return NextResponse.next();
 		
 	} catch (error) {

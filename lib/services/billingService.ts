@@ -67,7 +67,7 @@ export async function getUserSubscriptionStatus(
       currentPlan: {
         id: plan.planKey,
         name: plan.name,
-        description: plan.description,
+        description: plan.description || undefined,
         stripePriceId: plan.stripePriceId,
         stripeProductId: plan.stripeProductId,
         price: Number(plan.price),
@@ -198,7 +198,7 @@ export async function syncSubscriptionToDB(
       interval: stripeSubscription.items.data[0]?.price?.recurring?.interval || 'month',
       currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
       currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-      features: billingPlan?.meta?.features || ['PREMIUM'],
+      features: (billingPlan?.meta as any)?.features || ['PREMIUM'],
       raw: stripeSubscription,
     };
 
@@ -246,7 +246,7 @@ export async function cancelUserSubscription(
       subscriptionId,
       cancelAtPeriodEnd,
       effectiveDate: cancelAtPeriodEnd 
-        ? cancelResult.subscription.current_period_end 
+        ? (cancelResult.subscription as any).current_period_end 
         : new Date(),
     });
 
@@ -278,29 +278,38 @@ export async function upsertBillingAddress(
   try {
     const fullAddress = `${address.line1}${address.line2 ? ', ' + address.line2 : ''}, ${address.city}, ${address.postalCode}, ${address.country}`;
 
-    await prisma.userBillingAddress.upsert({
-      where: { userId: clerkUserId },
-      create: {
-        userId: clerkUserId,
-        country: address.country,
-        state: address.state,
-        city: address.city,
-        postalCode: address.postalCode,
-        addressLine1: address.line1,
-        addressLine2: address.line2,
-        fullAddress,
-      },
-      update: {
-        country: address.country,
-        state: address.state,
-        city: address.city,
-        postalCode: address.postalCode,
-        addressLine1: address.line1,
-        addressLine2: address.line2,
-        fullAddress,
-        updatedAt: new Date(),
-      },
+    const existingAddress = await prisma.userBillingAddress.findFirst({
+      where: { userId: clerkUserId }
     });
+
+    if (existingAddress) {
+      await prisma.userBillingAddress.update({
+        where: { id: existingAddress.id },
+        data: {
+          country: address.country,
+          state: address.state,
+          city: address.city,
+          postalCode: address.postalCode,
+          addressLine1: address.line1,
+          addressLine2: address.line2,
+          fullAddress,
+          updatedAt: new Date(),
+        }
+      });
+    } else {
+      await prisma.userBillingAddress.create({
+        data: {
+          userId: clerkUserId,
+          country: address.country,
+          state: address.state,
+          city: address.city,
+          postalCode: address.postalCode,
+          addressLine1: address.line1,
+          addressLine2: address.line2,
+          fullAddress,
+        }
+      });
+    }
 
     return { success: true };
 
@@ -320,7 +329,7 @@ export async function getUserBillingAddress(
   clerkUserId: string
 ): Promise<UserBillingAddress | null> {
   try {
-    return await prisma.userBillingAddress.findUnique({
+    return await prisma.userBillingAddress.findFirst({
       where: { userId: clerkUserId }
     });
   } catch (error) {
@@ -373,7 +382,7 @@ export async function getAvailablePlans(): Promise<BillingPlan[]> {
     return plans.map(plan => ({
       id: plan.planKey,
       name: plan.name,
-      description: plan.description,
+      description: plan.description || undefined,
       stripePriceId: plan.stripePriceId,
       stripeProductId: plan.stripeProductId,
       price: Number(plan.price),

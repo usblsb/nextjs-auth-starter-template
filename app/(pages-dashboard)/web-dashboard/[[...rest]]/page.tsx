@@ -40,45 +40,43 @@ export default async function WebDashboardPage() {
 	}
 
 	return (
-		<>
-			<div className="flex flex-col min-h-screen">
-				<Header />
-				<main className="flex-1 bg-gray-50">
-					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-						<div className="lg:grid lg:grid-cols-12 lg:gap-8">
-							<div className="lg:col-span-12">
-								<div className="max-w-4xl mx-auto">
-									{/* Contenedor del Dashboard Personalizado */}
-									<CustomDashboard
-										appearance={{
-											elements: {
-												// Personalización del contenedor principal
-												rootBox: "w-full",
-												card: "shadow-none border-0 bg-transparent",
-												// Personalización de formularios
-												formButtonPrimary:
-													"bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200",
-												formFieldInput:
-													"border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500",
-												formFieldLabel: "text-gray-700 font-medium",
-											},
-											variables: {
-												// Variables de color personalizadas
-												colorPrimary: "#2563eb", // blue-600
-												colorBackground: "#ffffff",
-												colorText: "#374151", // gray-700
-												colorTextSecondary: "#6b7280", // gray-500
-												borderRadius: "0.375rem", // rounded-md
-											},
-										}}
-									/>
-								</div>
+		<div className="flex flex-col min-h-screen">
+			<Header />
+			<main className="flex-1 bg-gray-50">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+					<div className="lg:grid lg:grid-cols-12 lg:gap-8">
+						<div className="lg:col-span-12">
+							<div className="max-w-4xl mx-auto">
+								{/* Contenedor del Dashboard Personalizado */}
+								<CustomDashboard
+									appearance={{
+										elements: {
+											// Personalización del contenedor principal
+											rootBox: "w-full",
+											card: "shadow-none border-0 bg-transparent",
+											// Personalización de formularios
+											formButtonPrimary:
+												"bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200",
+											formFieldInput:
+												"border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500",
+											formFieldLabel: "text-gray-700 font-medium",
+										},
+										variables: {
+											// Variables de color personalizadas
+											colorPrimary: "#2563eb", // blue-600
+											colorBackground: "#ffffff",
+											colorText: "#374151", // gray-700
+											colorTextSecondary: "#6b7280", // gray-500
+											borderRadius: "0.375rem", // rounded-md
+										},
+									}}
+								/>
 							</div>
 						</div>
 					</div>
-				</main>
-				<Footer />
-			</div>
-		</>
+				</div>
+			</main>
+			<Footer />
+		</div>
 	);
 }

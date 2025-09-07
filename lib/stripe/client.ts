@@ -7,7 +7,7 @@ import Stripe from 'stripe';
 import { stripeConfig } from './config';
 
 // Cliente Stripe singleton para servidor
-export const stripe = new Stripe(stripeConfig.secretKey, {
+export const stripe = new Stripe(stripeConfig.secretKey!, {
   apiVersion: stripeConfig.apiVersion,
   typescript: true,
   telemetry: false, // Opcional: deshabilitar telemetría en desarrollo
@@ -15,7 +15,7 @@ export const stripe = new Stripe(stripeConfig.secretKey, {
 
 // Función helper para obtener cliente con configuración específica
 export function getStripeClient(options?: Partial<Stripe.StripeConfig>) {
-  return new Stripe(stripeConfig.secretKey, {
+  return new Stripe(stripeConfig.secretKey!, {
     apiVersion: stripeConfig.apiVersion,
     typescript: true,
     telemetry: false,

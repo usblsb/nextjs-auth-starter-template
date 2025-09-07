@@ -9,12 +9,11 @@
  * @version 1.0.0
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
 
 // === CONFIGURACIÓN PRISMA ===
-const prismaClient = new PrismaClient();
-const prisma = prismaClient as any;
+const prisma = new PrismaClient();
 
 // === INTERFACES Y TIPOS ===
 
@@ -577,7 +576,7 @@ export async function validateGeographicConsistency(
         userId,
         metadata: {
           path: ['location', 'latitude'],
-          not: null
+          not: Prisma.DbNull
         }
       },
       orderBy: {
@@ -585,11 +584,11 @@ export async function validateGeographicConsistency(
       }
     });
 
-    if (!lastActivity?.metadata?.location) {
+    if (!lastActivity?.metadata || !(lastActivity.metadata as any)?.location) {
       return { isConsistent: true };
     }
 
-    const lastLocation = lastActivity.metadata.location;
+    const lastLocation = (lastActivity.metadata as any).location;
     const timeDiff = Date.now() - new Date(lastActivity.createdAt).getTime();
     const timeDiffHours = timeDiff / (1000 * 60 * 60);
 
@@ -716,7 +715,7 @@ export async function logUserLogin(
         clerkSessionId: clerkSessionId || null,
         action: 'LOGIN',
         description: `Usuario ${clerkUserId} inició sesión`,
-        metadata: metadata,
+        metadata: metadata as any,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
         createdAt: new Date()
@@ -724,7 +723,7 @@ export async function logUserLogin(
     });
 
     console.log(`✅ Login registrado para usuario ${clerkUserId}:`, {
-      logId: activityLog.id,
+      logId: activityLog.id.toString(),
       sessionId: clerkSessionId,
       ipAddress: ipAddress,
       deviceType: metadata.deviceType,
@@ -733,7 +732,7 @@ export async function logUserLogin(
 
     return {
       success: true,
-      logId: activityLog.id
+      logId: activityLog.id.toString()
     };
 
   } catch (error) {
@@ -822,7 +821,7 @@ export async function logUserLogout(
         description: sessionDuration 
           ? `Usuario ${clerkUserId} cerró sesión (duración: ${Math.floor(sessionDuration / 60)} min)`
           : `Usuario ${clerkUserId} cerró sesión`,
-        metadata: metadata,
+        metadata: metadata as any,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
         createdAt: new Date()
@@ -830,7 +829,7 @@ export async function logUserLogout(
     });
 
     console.log(`✅ Logout registrado para usuario ${clerkUserId}:`, {
-      logId: activityLog.id,
+      logId: activityLog.id.toString(),
       sessionId: clerkSessionId,
       sessionDuration: sessionDuration ? `${Math.floor(sessionDuration / 60)} minutos` : 'No calculada',
       ipAddress: ipAddress,
@@ -840,7 +839,7 @@ export async function logUserLogout(
 
     return {
       success: true,
-      logId: activityLog.id,
+      logId: activityLog.id.toString(),
       sessionDuration: sessionDuration
     };
 
@@ -922,7 +921,7 @@ export async function logUserActivity(
         clerkSessionId: data.clerkSessionId || null,
         action: data.action,
         description: description,
-        metadata: finalMetadata,
+        metadata: finalMetadata as any,
         ipAddress: finalMetadata.ipAddress || null,
         userAgent: finalMetadata.userAgent || null,
         createdAt: new Date()
@@ -930,7 +929,7 @@ export async function logUserActivity(
     });
 
     console.log(`✅ Actividad registrada para usuario ${data.clerkUserId}:`, {
-      logId: activityLog.id,
+      logId: activityLog.id.toString(),
       action: data.action,
       sessionId: data.clerkSessionId,
       ipAddress: finalMetadata.ipAddress,
@@ -940,7 +939,7 @@ export async function logUserActivity(
 
     return {
       success: true,
-      logId: activityLog.id
+      logId: activityLog.id.toString()
     };
 
   } catch (error) {
@@ -1204,7 +1203,7 @@ export async function logUserLoginWithLocation(
         clerkSessionId: clerkSessionId || null,
         action: 'LOGIN',
         description: `Usuario ${clerkUserId} inició sesión${metadata.location?.city ? ` desde ${metadata.location.city}, ${metadata.location.country}` : ''}`,
-        metadata: metadata,
+        metadata: metadata as any,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
         createdAt: new Date()
@@ -1212,7 +1211,7 @@ export async function logUserLoginWithLocation(
     });
 
     console.log(`✅ Login con geolocalización registrado para usuario ${clerkUserId}:`, {
-      logId: activityLog.id,
+      logId: activityLog.id.toString(),
       sessionId: clerkSessionId,
       ipAddress: ipAddress,
       location: metadata.location ? `${metadata.location.city}, ${metadata.location.country}` : 'No disponible',
@@ -1222,7 +1221,7 @@ export async function logUserLoginWithLocation(
 
     return {
       success: true,
-      logId: activityLog.id
+      logId: activityLog.id.toString()
     };
 
   } catch (error) {
@@ -1237,7 +1236,6 @@ export async function logUserLoginWithLocation(
 // === EXPORTACIONES ===
 export {
   prisma,
-  prismaClient,
   DEFAULT_CONFIG,
   extractClientIP,
   extractUserAgent,
