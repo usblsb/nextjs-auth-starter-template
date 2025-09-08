@@ -67,7 +67,16 @@ export function useSubscription(): UseSubscriptionReturn {
       const data = await response.json();
       
       if (data.success) {
-        setSubscription(data.subscription);
+        // Adaptar estructura de respuesta del API
+        const adaptedSubscription: UserSubscriptionStatus = {
+          isSubscribed: data.user.hasSubscription,
+          accessLevel: data.user.accessLevel,
+          status: data.subscription?.status,
+          currentPlan: data.subscription?.currentPlan,
+          currentPeriodEnd: data.subscription?.currentPeriodEnd,
+          cancelAtPeriodEnd: data.subscription?.cancelAtPeriodEnd,
+        };
+        setSubscription(adaptedSubscription);
       } else {
         throw new Error(data.error || 'Failed to fetch subscription status');
       }
@@ -95,6 +104,22 @@ export function useSubscription(): UseSubscriptionReturn {
       fetchSubscriptionStatus();
     }
   }, [isLoaded, fetchSubscriptionStatus]);
+
+  /**
+   * Escuchar eventos de actualización de suscripción
+   */
+  useEffect(() => {
+    const handleSubscriptionUpdate = () => {
+      console.log('🔄 Subscription update event received, refreshing...');
+      fetchSubscriptionStatus();
+    };
+
+    window.addEventListener('subscription-updated', handleSubscriptionUpdate);
+    
+    return () => {
+      window.removeEventListener('subscription-updated', handleSubscriptionUpdate);
+    };
+  }, [fetchSubscriptionStatus]);
 
   /**
    * Verifica si el usuario tiene acceso a un nivel específico

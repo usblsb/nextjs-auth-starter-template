@@ -118,14 +118,14 @@ export function BillingAddressForm({
 
     try {
       const response = await fetch(
-        `/api/stripe/create-subscription?country=${addr.country}&postalCode=${addr.postalCode}`
+        `/api/stripe/tax-preview?country=${addr.country}&postalCode=${addr.postalCode}`
       );
 
       if (response.ok) {
         const data = await response.json();
         
         const preview: TaxPreview = {
-          region: data.taxInfo.isCanaryIslands ? 'canary_islands' : 'mainland',
+          region: data.taxInfo.region,
           description: data.taxInfo.description,
           rate: data.taxInfo.rate,
           isCanaryIslands: data.taxInfo.isCanaryIslands,

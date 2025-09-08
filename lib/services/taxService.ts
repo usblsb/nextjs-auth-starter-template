@@ -69,6 +69,7 @@ export function determineTaxConfiguration(address: {
       region: 'mainland',
       taxConfig: {
         type: 'automatic',
+        rate: 0.21, // 21% IVA
         description: 'IVA España via Stripe Tax (automático)',
       },
     };

@@ -52,6 +52,7 @@ export async function getUserSubscriptionStatus(
     });
 
     if (!userWithSubscription || userWithSubscription.subscriptions.length === 0) {
+      console.log(`ℹ️ User ${clerkUserId} has no active subscriptions`);
       return {
         isSubscribed: false,
         accessLevel: 'FREE', // Usuario registrado sin suscripción
@@ -61,20 +62,27 @@ export async function getUserSubscriptionStatus(
     const subscription = userWithSubscription.subscriptions[0];
     const plan = subscription.billingPlan;
 
+    console.log(`✅ User ${clerkUserId} has active subscription:`, {
+      id: subscription.stripeSubscriptionId,
+      status: subscription.status,
+      planName: plan?.name,
+      features: subscription.features,
+    });
+
     return {
       isSubscribed: true,
       status: subscription.status as any,
       currentPlan: {
-        id: plan.planKey,
-        name: plan.name,
-        description: plan.description || undefined,
-        stripePriceId: plan.stripePriceId,
-        stripeProductId: plan.stripeProductId,
-        price: Number(plan.price),
-        currency: plan.currency,
-        interval: plan.interval as 'month' | 'year',
-        features: subscription.features,
-        isActive: plan.isActive,
+        id: plan?.planKey || 'unknown',
+        name: plan?.name || 'Unknown Plan',
+        description: plan?.description || undefined,
+        stripePriceId: plan?.stripePriceId || '',
+        stripeProductId: plan?.stripeProductId || '',
+        price: Number(plan?.price || 0),
+        currency: plan?.currency || 'EUR',
+        interval: (plan?.interval as 'month' | 'year') || 'month',
+        features: subscription.features || ['PREMIUM'],
+        isActive: plan?.isActive ?? true,
       },
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.status === 'active' && subscription.currentPeriodEnd < new Date(),
@@ -188,6 +196,15 @@ export async function syncSubscriptionToDB(
       // Continuamos sin fallar - puede que el plan se agregue después
     }
 
+    // Validar fechas antes de convertir
+    const periodStart = stripeSubscription.current_period_start;
+    const periodEnd = stripeSubscription.current_period_end;
+    
+    if (!periodStart || !periodEnd) {
+      console.error('❌ Invalid period dates from Stripe:', { periodStart, periodEnd });
+      throw new Error('Invalid period dates from Stripe subscription');
+    }
+
     // Crear o actualizar suscripción en BD
     const subscriptionData = {
       userId: clerkUserId,
@@ -196,8 +213,8 @@ export async function syncSubscriptionToDB(
       stripePriceId: priceId,
       status: stripeSubscription.status,
       interval: stripeSubscription.items.data[0]?.price?.recurring?.interval || 'month',
-      currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
+      currentPeriodStart: new Date(periodStart * 1000),
+      currentPeriodEnd: new Date(periodEnd * 1000),
       features: (billingPlan?.meta as any)?.features || ['PREMIUM'],
       raw: stripeSubscription,
     };

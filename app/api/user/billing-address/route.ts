@@ -88,9 +88,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'Billing address saved successfully',
-      addressId: savedAddress.id,
+      addressId: savedAddress.id.toString(),
       data: {
-        id: savedAddress.id,
+        id: savedAddress.id.toString(),
         country: savedAddress.country,
         state: savedAddress.state,
         city: savedAddress.city,

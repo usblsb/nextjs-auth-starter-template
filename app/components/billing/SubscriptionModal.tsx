@@ -51,10 +51,14 @@ export function SubscriptionModal({
   }, [billingAddress, taxPreview, plan]);
 
   const calculatePrice = () => {
-    if (!taxPreview) return;
+    if (!taxPreview || taxPreview.rate === undefined) {
+      console.warn('Tax preview or rate is undefined:', taxPreview);
+      return;
+    }
 
     const basePrice = plan.price;
-    const taxAmount = basePrice * taxPreview.rate;
+    const taxRate = typeof taxPreview.rate === 'number' ? taxPreview.rate : 0;
+    const taxAmount = basePrice * taxRate;
     const totalPrice = basePrice + taxAmount;
 
     setPriceCalculation({
@@ -63,6 +67,13 @@ export function SubscriptionModal({
       totalPrice,
       currency: plan.currency,
       interval: plan.interval,
+    });
+
+    console.log('Price calculation:', {
+      basePrice,
+      taxRate,
+      taxAmount,
+      totalPrice
     });
   };
 
@@ -92,7 +103,11 @@ export function SubscriptionModal({
     setError(null);
 
     try {
-      const response = await fetch('/api/stripe/create-subscription', {
+      // Guardar dirección de facturación primero
+      await saveBillingAddress();
+
+      // Crear sesión de checkout
+      const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,29 +133,29 @@ export function SubscriptionModal({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error creating subscription');
+        throw new Error(errorData.error || 'Error creating checkout session');
       }
 
       const data = await response.json();
 
-      if (data.success) {
-        // Guardar dirección en base de datos
-        await saveBillingAddress();
+      if (data.success && data.checkoutUrl) {
+        console.log('✅ Redirecting to Stripe Checkout:', data.sessionId);
         
-        console.log('✅ Subscription created successfully:', data.subscriptionId);
-        onSuccess?.();
-        onClose();
+        // Redirigir a Stripe Checkout
+        window.location.href = data.checkoutUrl;
+        
+        // No cerrar el modal aquí porque se está redirigiendo
       } else {
-        throw new Error(data.error || 'Failed to create subscription');
+        throw new Error(data.error || 'Failed to create checkout session');
       }
 
     } catch (error) {
-      console.error('❌ Subscription error:', error);
+      console.error('❌ Checkout error:', error);
       setError(error instanceof Error ? error.message : 'Error desconocido');
       setStep('confirm'); // Volver al paso de confirmación
-    } finally {
       setLoading(false);
     }
+    // No resetear loading aquí porque se redirige
   };
 
   const saveBillingAddress = async () => {
@@ -287,8 +302,8 @@ export function SubscriptionModal({
             {step === 'processing' && (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Procesando tu suscripción...</p>
-                <p className="text-sm text-gray-500 mt-2">No cierres esta ventana</p>
+                <p className="text-gray-600">Redirigiendo a Stripe Checkout...</p>
+                <p className="text-sm text-gray-500 mt-2">Serás redirigido para completar el pago</p>
               </div>
             )}
           </div>
@@ -310,7 +325,7 @@ export function SubscriptionModal({
                 disabled={step === 'address' ? !addressValid : loading}
                 className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {step === 'address' ? 'Continuar' : 'Confirmar Suscripción'}
+                {step === 'address' ? 'Continuar' : 'Proceder al Pago'}
               </button>
             </div>
           )}

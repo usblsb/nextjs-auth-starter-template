@@ -22,6 +22,7 @@ const DEBUG_MODE = process.env.NODE_ENV === 'development';
 
 // Eventos críticos que procesamos
 const CRITICAL_EVENTS = [
+  'checkout.session.completed',
   'customer.subscription.created',
   'customer.subscription.updated',
   'customer.subscription.deleted',
@@ -51,6 +52,58 @@ function validateWebhookSignature(payload: string, signature: string): Stripe.Ev
     console.error('❌ Error validating Stripe webhook signature:', err);
     return null;
   }
+}
+
+/**
+ * Procesa evento checkout.session.completed
+ */
+async function handleCheckoutSessionCompleted(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session;
+  
+  if (DEBUG_MODE) {
+    console.log('🛒 Checkout session completed:', {
+      id: session.id,
+      customer: session.customer,
+      subscription: session.subscription,
+      amountTotal: session.amount_total,
+    });
+  }
+
+  const clerkUserId = session.client_reference_id;
+  
+  if (!clerkUserId) {
+    console.error('❌ No client_reference_id in checkout session');
+    return { success: false, error: 'No client_reference_id found' };
+  }
+
+  // Log del checkout completado
+  await logBillingActivity(clerkUserId, 'CHECKOUT_SESSION_COMPLETED', {
+    sessionId: session.id,
+    customerId: session.customer,
+    subscriptionId: session.subscription,
+    amountTotal: session.amount_total,
+    currency: session.currency,
+    stripeEventId: event.id,
+  }, 'Checkout session completed via webhook');
+
+  // Si hay suscripción, obtener detalles y sincronizar
+  if (session.subscription && typeof session.subscription === 'string') {
+    try {
+      const subscription = await stripe.subscriptions.retrieve(session.subscription);
+      const syncResult = await syncSubscriptionToDB(subscription, clerkUserId);
+      
+      if (syncResult.success && DEBUG_MODE) {
+        console.log('✅ Subscription synced from checkout session:', subscription.id);
+      }
+      
+      return syncResult;
+    } catch (error) {
+      console.error('❌ Error syncing subscription from checkout session:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  return { success: true };
 }
 
 /**
@@ -339,6 +392,9 @@ async function processStripeEvent(event: Stripe.Event) {
 
   try {
     switch (eventType) {
+      case 'checkout.session.completed':
+        return await handleCheckoutSessionCompleted(event);
+      
       case 'customer.subscription.created':
         return await handleSubscriptionCreated(event);
       
