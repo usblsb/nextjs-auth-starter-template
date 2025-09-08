@@ -352,6 +352,68 @@ async function handlePaymentFailed(event: Stripe.Event) {
 }
 
 /**
+ * Guarda la dirección de billing desde Stripe a la BD
+ * SIEMPRE crea una nueva entrada para mantener historial completo (compliance legal España)
+ */
+async function saveBillingAddressFromStripe(
+  clerkUserId: string,
+  stripeAddress: Stripe.Address,
+  eventId: string
+): Promise<void> {
+  if (!stripeAddress) return;
+
+  try {
+    // Crear dirección completa
+    const fullAddress = [
+      stripeAddress.line1,
+      stripeAddress.line2,
+      stripeAddress.city,
+      stripeAddress.postal_code,
+      stripeAddress.state,
+      stripeAddress.country
+    ].filter(Boolean).join(', ');
+
+    // SIEMPRE crear nueva entrada - NO actualizar existente
+    // Esto mantiene el historial completo para compliance legal
+    const newAddressEntry = await prisma.userBillingAddress.create({
+      data: {
+        userId: clerkUserId,
+        country: stripeAddress.country || '',
+        state: stripeAddress.state || null,
+        city: stripeAddress.city || '',
+        postalCode: stripeAddress.postal_code || '',
+        addressLine1: stripeAddress.line1 || '',
+        addressLine2: stripeAddress.line2 || null,
+        fullAddress,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    });
+
+    if (DEBUG_MODE) {
+      console.log(`📍 New billing address entry created for user ${clerkUserId}:`, {
+        id: newAddressEntry.id,
+        fullAddress,
+        eventId
+      });
+    }
+
+    // Log de la nueva entrada de dirección
+    await logBillingActivity(clerkUserId, 'ADDRESS_HISTORY_ENTRY_CREATED', {
+      address: stripeAddress,
+      fullAddress,
+      addressEntryId: newAddressEntry.id,
+      stripeEventId: eventId,
+      timestamp: new Date().toISOString(),
+    }, `New billing address entry created from Stripe webhook (compliance log)`);
+
+  } catch (error) {
+    console.error('❌ Error saving billing address from Stripe:', error);
+    throw error;
+  }
+}
+
+/**
  * Procesa eventos de customer
  */
 async function handleCustomerEvent(event: Stripe.Event) {
@@ -363,6 +425,7 @@ async function handleCustomerEvent(event: Stripe.Event) {
       id: customer.id,
       email: customer.email,
       clerkUserId: customer.metadata?.clerk_user_id,
+      address: customer.address,
     });
   }
 
@@ -373,10 +436,21 @@ async function handleCustomerEvent(event: Stripe.Event) {
     return { success: true };
   }
 
+  // Si el customer tiene dirección y es un evento de actualización, guardarla
+  if (eventType === 'customer.updated' && customer.address) {
+    try {
+      await saveBillingAddressFromStripe(clerkUserId, customer.address, event.id);
+      console.log(`✅ Billing address saved for customer ${customer.id}`);
+    } catch (error) {
+      console.error('❌ Error saving billing address:', error);
+    }
+  }
+
   // Log del evento de customer
   await logBillingActivity(clerkUserId, `CUSTOMER_${eventType.split('.')[1].toUpperCase()}`, {
     customerId: customer.id,
     email: customer.email,
+    address: customer.address,
     eventType,
     stripeEventId: event.id,
   }, `Customer ${eventType} event`);

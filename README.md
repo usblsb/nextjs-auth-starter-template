@@ -57,6 +57,8 @@
 - ✅ **Gestión de Sesiones Activas**
 - ✅ **Páginas Legales** (Aviso Legal, Política de Cookies, etc.)
 - ✅ **Sistema de Templates** reutilizable
+- ✅ **Webhooks de Stripe** con Stripe CLI para desarrollo local
+- ✅ **Historial de Direcciones de Facturación** (compliance legal España)
 - ✅ **Documentación Técnica** completa
 
 ## 🚀 Origen del Proyecto
@@ -103,9 +105,46 @@ pnpm install
 pnpm dev
 ```
 
-5. **Abrir en el navegador:**
+5. **Configurar webhooks de Stripe (opcional):**
+
+```bash
+# Para recibir webhooks de Stripe en desarrollo local
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# El comando anterior te dará un webhook secret, cópialo al .env:
+# STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+6. **Abrir en el navegador:**
    - Aplicación: http://localhost:3000
    - Dashboard: http://localhost:3000/web-dashboard
+
+## 💳 Integración Stripe
+
+El proyecto incluye integración completa con Stripe para:
+
+- **Webhooks automáticos** que capturan cambios de direcciones de billing
+- **Historial completo** de direcciones para compliance legal (España)
+- **Desarrollo local** usando Stripe CLI para túneles seguros
+- **Logging completo** en base de datos para auditorías
+
+### Configuración Webhooks Stripe
+
+1. **Desarrollo Local:**
+   ```bash
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   ```
+   
+2. **Eventos capturados:**
+   - `customer.updated` - Cambios en direcciones de clientes
+   - `checkout.session.completed` - Checkouts completados
+   - `invoice.payment_succeeded/failed` - Estados de pagos
+   - `customer.subscription.*` - Cambios en suscripciones
+
+3. **Compliance legal:**
+   - Cada cambio de dirección crea **nueva entrada** (no actualiza)
+   - Historial completo mantenido en `user_billing_address`
+   - Cliente solo ve dirección actual, sistema mantiene historial completo
 
 ## Estructura
 
@@ -129,6 +168,9 @@ pnpm dev
 │   │   ├── images/              # Imágenes específicas del template
 │   │   └── styles/              # Estilos específicos del template
 │   ├── api/                     # Rutas API de Next.js
+│   │   ├── webhooks/            # Webhooks para integraciones externas
+│   │   │   ├── clerk/           # Webhooks de Clerk para sincronización usuarios
+│   │   │   └── stripe/          # Webhooks de Stripe para direcciones y pagos
 │   │   └── protected/           # Endpoints API protegidos con autenticación
 │   ├── components/              # Componentes React reutilizables
 │   │   ├── dashboard/           # Componentes específicos del dashboard
@@ -204,6 +246,8 @@ pnpm dev
 - **app/sign-in/[[...sign-in]]/**: Páginas de autenticación con Clerk
 - **app/sign-up/[[...sign-up]]/**: Páginas de registro con Clerk
 - **app/sign-out/[[...sign-out]]/**: Páginas de cierre de sesión
+- **app/api/webhooks/stripe/route.ts**: Webhook endpoint para eventos de Stripe
+- **lib/services/billingService.ts**: Servicios para gestión de direcciones y compliance
 
 ### Componentes y Layouts
 

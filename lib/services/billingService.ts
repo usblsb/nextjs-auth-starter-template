@@ -304,7 +304,8 @@ export async function cancelUserSubscription(
 }
 
 /**
- * Guarda o actualiza dirección de facturación
+ * Guarda dirección de facturación como nueva entrada en el historial
+ * SIEMPRE crea nueva entrada para compliance legal (España)
  */
 export async function upsertBillingAddress(
   clerkUserId: string,
@@ -320,43 +321,36 @@ export async function upsertBillingAddress(
   try {
     const fullAddress = `${address.line1}${address.line2 ? ', ' + address.line2 : ''}, ${address.city}, ${address.postalCode}, ${address.country}`;
 
-    const existingAddress = await prisma.userBillingAddress.findFirst({
-      where: { userId: clerkUserId }
+    // SIEMPRE crear nueva entrada - NO actualizar existente
+    // Esto mantiene el historial completo para compliance legal
+    const newAddressEntry = await prisma.userBillingAddress.create({
+      data: {
+        userId: clerkUserId,
+        country: address.country,
+        state: address.state,
+        city: address.city,
+        postalCode: address.postalCode,
+        addressLine1: address.line1,
+        addressLine2: address.line2,
+        fullAddress,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
     });
 
-    if (existingAddress) {
-      await prisma.userBillingAddress.update({
-        where: { id: existingAddress.id },
-        data: {
-          country: address.country,
-          state: address.state,
-          city: address.city,
-          postalCode: address.postalCode,
-          addressLine1: address.line1,
-          addressLine2: address.line2,
-          fullAddress,
-          updatedAt: new Date(),
-        }
-      });
-    } else {
-      await prisma.userBillingAddress.create({
-        data: {
-          userId: clerkUserId,
-          country: address.country,
-          state: address.state,
-          city: address.city,
-          postalCode: address.postalCode,
-          addressLine1: address.line1,
-          addressLine2: address.line2,
-          fullAddress,
-        }
-      });
-    }
+    // Log para compliance
+    await logBillingActivity(clerkUserId, 'ADDRESS_HISTORY_ENTRY_MANUAL', {
+      address,
+      fullAddress,
+      addressEntryId: newAddressEntry.id,
+      source: 'manual_entry',
+      timestamp: new Date().toISOString(),
+    }, `New billing address entry created manually (compliance log)`);
 
     return { success: true };
 
   } catch (error) {
-    console.error('❌ Error upserting billing address:', error);
+    console.error('❌ Error creating billing address entry:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -365,18 +359,38 @@ export async function upsertBillingAddress(
 }
 
 /**
- * Obtiene la dirección de facturación del usuario
+ * Obtiene la dirección de facturación MÁS RECIENTE del usuario
+ * Solo devuelve la última entrada que el cliente debe ver
  */
 export async function getUserBillingAddress(
   clerkUserId: string
 ): Promise<UserBillingAddress | null> {
   try {
     return await prisma.userBillingAddress.findFirst({
-      where: { userId: clerkUserId }
+      where: { userId: clerkUserId },
+      orderBy: { createdAt: 'desc' } // Más reciente primero
     });
   } catch (error) {
     console.error('❌ Error getting user billing address:', error);
     return null;
+  }
+}
+
+/**
+ * Obtiene TODO el historial de direcciones del usuario (para auditorías internas)
+ * NUNCA mostrar esto al cliente - solo para compliance y auditorías
+ */
+export async function getUserBillingAddressHistory(
+  clerkUserId: string
+): Promise<UserBillingAddress[]> {
+  try {
+    return await prisma.userBillingAddress.findMany({
+      where: { userId: clerkUserId },
+      orderBy: { createdAt: 'desc' } // Más reciente primero
+    });
+  } catch (error) {
+    console.error('❌ Error getting user billing address history:', error);
+    return [];
   }
 }
 

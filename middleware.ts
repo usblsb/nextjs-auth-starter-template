@@ -11,6 +11,9 @@ const isInternalApiRoute = createRouteMatcher(["/api/internal/(.*)"]);
 // Definir las rutas de API públicas de Stripe (planes, etc) y debug
 const isPublicStripeApiRoute = createRouteMatcher(["/api/stripe/plans", "/api/debug/(.*)"]);
 
+// Definir las rutas de webhooks que no requieren autenticación
+const isWebhookRoute = createRouteMatcher(["/api/webhooks/(.*)"]);
+
 // Middleware integrado: Clerk Authentication + Subscription Access Control
 export default clerkMiddleware(async (auth, req) => {
 	try {
@@ -32,7 +35,12 @@ export default clerkMiddleware(async (auth, req) => {
 			return NextResponse.next();
 		}
 		
-		// 5. Verificar acceso basado en suscripción
+		// 5. Las rutas de webhooks no requieren autenticación
+		if (isWebhookRoute(req)) {
+			return NextResponse.next();
+		}
+		
+		// 6. Verificar acceso basado en suscripción
 		const subscriptionCheck = await subscriptionMiddleware(req, userId);
 		
 		if (subscriptionCheck.shouldRedirect && subscriptionCheck.redirectUrl) {
@@ -51,7 +59,7 @@ export default clerkMiddleware(async (auth, req) => {
 			return response;
 		}
 		
-		// 6. Si llegamos aquí, el usuario tiene acceso - continuar con la request
+		// 7. Si llegamos aquí, el usuario tiene acceso - continuar con la request
 		return NextResponse.next();
 		
 	} catch (error) {
