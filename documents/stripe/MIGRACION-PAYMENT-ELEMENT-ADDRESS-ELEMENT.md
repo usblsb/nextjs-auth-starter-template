@@ -4,6 +4,7 @@
 **Fecha:** 2025-09-08  
 **Objetivo:** Migrar del sistema manual actual a integración moderna Payment Element + Address Element  
 **Proyecto:** Next.js + Clerk + Stripe + Prisma  
+**UI Framework:** shadcn/ui + Tailwind CSS 4.0  
 
 ---
 
@@ -19,6 +20,7 @@
 | Precios | Variables según TAX | **Fijos: €29 y €290 (tax incluido)** |
 | Flujo | Modal → API custom | Stripe Checkout redirect |
 | Países | Solo España | **Norteamérica + Sudamérica + UE** |
+| UI Framework | Tailwind CSS básico | **shadcn/ui + Tailwind CSS 4.0** |
 
 ### 1.2 Requisitos Clave del Negocio
 
@@ -28,6 +30,7 @@
 4. **Cobertura Geográfica**: Norteamérica, Sudamérica, Unión Europea
 5. **Mobile-First**: Formulario optimizado para móvil
 6. **Simplicidad**: Proceso de pago en máximo 3 pasos
+7. **UI Moderna**: shadcn/ui components con diseño profesional
 
 ---
 
@@ -168,9 +171,39 @@ export const taxConfig = {
 ### 4.1 Nuevas Dependencias
 
 ```bash
+# Instalar shadcn/ui y dependencias de diseño
+pnpm dlx shadcn@latest init
+
 # Instalar dependencias de Stripe modernas
 pnpm add @stripe/stripe-js @stripe/react-stripe-js
 pnpm add -D @types/stripe
+
+# Instalar componentes shadcn/ui necesarios
+pnpm dlx shadcn@latest add button dialog card input label select badge alert-dialog
+pnpm dlx shadcn@latest add form textarea skeleton loading-spinner
+```
+
+### 4.1.1 Configuración shadcn/ui
+
+```json
+// components.json (generado automáticamente por shadcn init)
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "default",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "styles/globals.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  }
+}
 ```
 
 ### 4.2 Configuración Stripe Cliente
@@ -212,6 +245,8 @@ import { AddressElement, useStripe } from '@stripe/react-stripe-js';
 import { useState, useEffect } from 'react';
 import { supportedCountries } from '@/lib/stripe/countries-config';
 import { isCanaryIslandsPostalCode } from '@/lib/services/taxService';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 interface ModernAddressElementProps {
   onAddressChange: (address: any, taxInfo: any) => void;
@@ -268,18 +303,14 @@ export function ModernAddressElement({ onAddressChange }: ModernAddressElementPr
         onChange={handleAddressChange}
       />
       
-      {/* Preview de impuestos */}
+      {/* Preview de impuestos con shadcn/ui Alert */}
       {taxPreview && (
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center text-sm">
-            <svg className="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span className="text-blue-800">
-              {taxPreview.description}
-            </span>
-          </div>
-        </div>
+        <Alert className="border-blue-200 bg-blue-50">
+          <InfoIcon className="h-4 w-4 text-blue-500" />
+          <AlertDescription className="text-blue-800">
+            {taxPreview.description}
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
@@ -294,6 +325,8 @@ export function ModernAddressElement({ onAddressChange }: ModernAddressElementPr
 
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 interface ModernPaymentElementProps {
   clientSecret: string;
@@ -349,13 +382,21 @@ export function ModernPaymentElement({
         }}
       />
       
-      <button
+      <Button
         type="submit"
         disabled={!stripe || processing}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+        className="w-full"
+        size="lg"
       >
-        {processing ? 'Procesando...' : 'Confirmar Suscripción'}
-      </button>
+        {processing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Procesando...
+          </>
+        ) : (
+          'Confirmar Suscripción'
+        )}
+      </Button>
     </form>
   );
 }
@@ -372,6 +413,11 @@ import { Elements } from '@stripe/react-stripe-js';
 import { stripePromise, stripeElementsOptions } from '@/lib/stripe/client-config';
 import { ModernAddressElement } from './ModernAddressElement';
 import { ModernPaymentElement } from './ModernPaymentElement';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import type { BillingPlan } from '@/lib/stripe/types';
 
 interface ModernSubscriptionModalProps {
@@ -446,39 +492,33 @@ export function ModernSubscriptionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4">
-        <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose} />
-        
-        <div className="relative bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold">
-              Suscripción a {plan.name}
-            </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg w-full">
+        <DialogHeader>
+          <DialogTitle className="text-xl">
+            Suscripción a {plan.name}
+          </DialogTitle>
+        </DialogHeader>
 
-          {/* Precio fijo prominente */}
-          <div className="text-center mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="text-2xl font-bold text-gray-900">
+        {/* Precio fijo prominente con shadcn/ui Card */}
+        <Card className="text-center mb-6">
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold text-foreground">
               {plan.interval === 'month' ? '€29' : '€290'}
-              <span className="text-sm font-normal text-gray-600 ml-1">
+              <span className="text-base font-normal text-muted-foreground ml-1">
                 /{plan.interval === 'month' ? 'mes' : 'año'}
               </span>
             </div>
-            <p className="text-sm text-gray-600">Impuestos incluidos</p>
-          </div>
+            <p className="text-sm text-muted-foreground mt-1">Impuestos incluidos</p>
+          </CardContent>
+        </Card>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
           {/* Contenido según paso */}
           {step === 'address' && (
@@ -487,13 +527,14 @@ export function ModernSubscriptionModal({
                 <h3 className="font-medium">Dirección de facturación</h3>
                 <ModernAddressElement onAddressChange={handleAddressComplete} />
                 
-                <button
+                <Button
                   onClick={handleContinueToPayment}
                   disabled={!billingAddress}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+                  className="w-full"
+                  size="lg"
                 >
                   Continuar al Pago
-                </button>
+                </Button>
               </div>
             </Elements>
           )}
@@ -519,13 +560,12 @@ export function ModernSubscriptionModal({
 
           {step === 'processing' && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Preparando el pago...</p>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-muted-foreground">Preparando el pago...</p>
             </div>
           )}
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 ```
@@ -1055,6 +1095,9 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
 ### 9.1 Fase 1: Preparación (Semana 1)
 
 #### Día 1-2: Setup Técnico
+
+- [ ] **Instalar shadcn/ui**: `pnpm dlx shadcn@latest init`
+- [ ] **Instalar componentes**: `pnpm dlx shadcn@latest add button dialog card input label select badge alert-dialog form textarea skeleton`
 - [ ] Instalar dependencias `@stripe/stripe-js` y `@stripe/react-stripe-js`
 - [ ] Configurar Stripe Elements con localización española
 - [ ] Crear configuración de países soportados
@@ -1075,22 +1118,26 @@ async function handlePaymentIntentFailed(paymentIntent: any) {
 ### 9.2 Fase 2: Componentes UI (Semana 2)
 
 #### Día 1-3: Address Element
-- [ ] Crear `ModernAddressElement.tsx`
+
+- [ ] Crear `ModernAddressElement.tsx` con shadcn/ui Alert
 - [ ] Integrar lista de países soportados
-- [ ] Implementar detección de IGIC para Canarias
-- [ ] Optimizar para móvil
+- [ ] Implementar detección de IGIC para Canarias  
+- [ ] Optimizar para móvil con componentes shadcn/ui
 
 #### Día 4-5: Payment Element  
-- [ ] Crear `ModernPaymentElement.tsx`
+
+- [ ] Crear `ModernPaymentElement.tsx` con shadcn/ui Button
 - [ ] Configurar métodos de pago (tarjeta, PayPal, etc.)
-- [ ] Implementar handling de errores
+- [ ] Implementar handling de errores con shadcn/ui Alert
 - [ ] Testing de flujo completo
 
 #### Día 6-7: Modal Moderno
-- [ ] Crear `ModernSubscriptionModal.tsx`
+
+- [ ] Crear `ModernSubscriptionModal.tsx` con shadcn/ui Dialog
 - [ ] Integrar Address + Payment Elements
-- [ ] Implementar navegación por pasos
-- [ ] Responsive design para móvil
+- [ ] Usar shadcn/ui Card para precio prominente
+- [ ] Implementar navegación por pasos con Loader2 component
+- [ ] Responsive design optimizado con shadcn/ui
 
 ### 9.3 Fase 3: Integración (Semana 3)
 
@@ -1273,14 +1320,17 @@ Esta migración a **Payment Element + Address Element** modernizará completamen
 4. **3 Regiones**: Norteamérica + Sudamérica + UE soportadas
 5. **Mobile-First**: Optimizado para dispositivos móviles
 6. **Simplicidad**: Proceso en 2 pasos (dirección → pago)
+7. **UI Profesional**: shadcn/ui + Tailwind CSS 4.0
 
 ### 🔧 Beneficios Técnicos
 
 - **Eliminación errores NaN**: Precios fijos resuelven cálculos
-- **Stripe Elements nativo**: Mejor seguridad y UX
-- **Responsive automático**: Elements adaptan a móvil
+- **shadcn/ui Components**: Dialog, Card, Button, Alert profesionales
+- **Stripe Elements nativo**: Mejor seguridad y UX  
+- **Responsive automático**: Elements + shadcn/ui adaptan a móvil
 - **Métodos de pago múltiples**: Tarjeta, PayPal, Apple Pay, etc.
 - **Compliance PCI**: Stripe maneja datos sensibles
+- **Design System**: Componentes consistentes y mantenibles
 - **Webhooks modernos**: PaymentIntent + Subscription events
 
 ### 🚀 Siguiente Paso
@@ -1291,4 +1341,5 @@ Esta migración a **Payment Element + Address Element** modernizará completamen
 
 **Estado**: 📋 Plan de Migración Completo - Listo para Implementación  
 **Estimación**: 4 semanas de desarrollo + 1 semana de testing  
+**UI Framework**: shadcn/ui + Tailwind CSS 4.0 para interfaz profesional  
 **Riesgo**: Bajo (manteniendo sistema actual como fallback)
