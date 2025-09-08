@@ -8,8 +8,8 @@ const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/sign
 // Definir las rutas de API interna que no requieren autenticación
 const isInternalApiRoute = createRouteMatcher(["/api/internal/(.*)"]);
 
-// Definir las rutas de API públicas de Stripe (planes, etc)
-const isPublicStripeApiRoute = createRouteMatcher(["/api/stripe/plans"]);
+// Definir las rutas de API públicas de Stripe (planes, etc) y debug
+const isPublicStripeApiRoute = createRouteMatcher(["/api/stripe/plans", "/api/debug/(.*)"]);
 
 // Middleware integrado: Clerk Authentication + Subscription Access Control
 export default clerkMiddleware(async (auth, req) => {

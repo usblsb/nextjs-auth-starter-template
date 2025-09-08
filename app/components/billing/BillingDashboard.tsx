@@ -44,7 +44,19 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
         }
 
         const statusData = await statusResponse.json();
-        setSubscriptionStatus(statusData);
+        
+        // Adaptar estructura del API a UserSubscriptionStatus
+        const adaptedStatus: UserSubscriptionStatus = {
+          isSubscribed: statusData.user?.hasSubscription || false,
+          accessLevel: statusData.user?.accessLevel || 'FREE',
+          status: statusData.subscription?.status,
+          currentPlan: statusData.subscription?.currentPlan,
+          currentPeriodEnd: statusData.subscription?.currentPeriodEnd,
+          cancelAtPeriodEnd: statusData.subscription?.cancelAtPeriodEnd || false,
+        };
+        
+        console.log('🔄 [BillingDashboard] Adapted subscription status:', adaptedStatus);
+        setSubscriptionStatus(adaptedStatus);
 
         // Cargar planes disponibles con información fiscal
         const plansResponse = await fetch('/api/stripe/plans', {
@@ -81,7 +93,18 @@ export function BillingDashboard({ userId }: BillingDashboardProps) {
       const response = await fetch('/api/stripe/subscription-status');
       if (response.ok) {
         const data = await response.json();
-        setSubscriptionStatus(data);
+        
+        // Adaptar estructura del API a UserSubscriptionStatus
+        const adaptedStatus: UserSubscriptionStatus = {
+          isSubscribed: data.user?.hasSubscription || false,
+          accessLevel: data.user?.accessLevel || 'FREE',
+          status: data.subscription?.status,
+          currentPlan: data.subscription?.currentPlan,
+          currentPeriodEnd: data.subscription?.currentPeriodEnd,
+          cancelAtPeriodEnd: data.subscription?.cancelAtPeriodEnd || false,
+        };
+        
+        setSubscriptionStatus(adaptedStatus);
       }
     } catch (err) {
       console.error('Error refreshing subscription status:', err);

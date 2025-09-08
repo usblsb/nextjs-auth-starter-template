@@ -16,6 +16,12 @@ export async function GET(req: NextRequest) {
     // 1. Verificar autenticación
     const { userId } = await auth();
     
+    console.log(`🔧 [SUBSCRIPTION-STATUS API] Clerk auth result:`, {
+      userId: userId,
+      hasUserId: !!userId,
+      userIdType: typeof userId,
+    });
+    
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized - User not authenticated' },
@@ -27,6 +33,14 @@ export async function GET(req: NextRequest) {
 
     // 2. Obtener estado de suscripción desde BD
     const subscriptionStatus = await getUserSubscriptionStatus(userId);
+    
+    console.log('🔍 Subscription status result:', {
+      userId,
+      isSubscribed: subscriptionStatus.isSubscribed,
+      accessLevel: subscriptionStatus.accessLevel,
+      status: subscriptionStatus.status,
+      currentPlan: subscriptionStatus.currentPlan?.name
+    });
 
     // 3. Obtener planes disponibles
     const availablePlans = await getAvailablePlans();

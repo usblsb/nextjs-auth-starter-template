@@ -7,7 +7,8 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
-import { BillingAddressForm, type BillingAddress, type TaxPreview } from './BillingAddressForm';
+import { StripeWrapper } from '../stripe/StripeWrapper';
+import { SubscriptionFormComplete } from './SubscriptionFormComplete';
 import type { BillingPlan } from '@/lib/stripe/types';
 
 interface SubscriptionModalProps {
@@ -18,13 +19,6 @@ interface SubscriptionModalProps {
   onSuccess?: () => void;
 }
 
-interface PriceCalculation {
-  basePrice: number;
-  taxAmount: number;
-  totalPrice: number;
-  currency: string;
-  interval: string;
-}
 
 export function SubscriptionModal({
   isOpen,
@@ -34,154 +28,82 @@ export function SubscriptionModal({
   onSuccess,
 }: SubscriptionModalProps) {
   const { user } = useUser();
-  const [step, setStep] = useState<'address' | 'confirm' | 'processing'>('address');
-  const [billingAddress, setBillingAddress] = useState<BillingAddress | null>(null);
-  const [addressValid, setAddressValid] = useState(false);
-  const [taxPreview, setTaxPreview] = useState<TaxPreview | null>(null);
-  const [priceCalculation, setPriceCalculation] = useState<PriceCalculation | null>(null);
+  const [step, setStep] = useState<'loading' | 'form' | 'processing' | 'success'>('loading');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string>('');
 
   const email = userEmail || user?.primaryEmailAddress?.emailAddress || '';
 
   useEffect(() => {
-    if (billingAddress && taxPreview && plan) {
-      calculatePrice();
+    if (isOpen && plan) {
+      createPaymentIntent();
     }
-  }, [billingAddress, taxPreview, plan]);
+  }, [isOpen, plan]);
 
-  const calculatePrice = () => {
-    if (!taxPreview || taxPreview.rate === undefined) {
-      console.warn('Tax preview or rate is undefined:', taxPreview);
+
+  const createPaymentIntent = async () => {
+    if (!email) {
+      setError('Email requerido');
       return;
     }
 
-    const basePrice = plan.price;
-    const taxRate = typeof taxPreview.rate === 'number' ? taxPreview.rate : 0;
-    const taxAmount = basePrice * taxRate;
-    const totalPrice = basePrice + taxAmount;
-
-    setPriceCalculation({
-      basePrice,
-      taxAmount,
-      totalPrice,
-      currency: plan.currency,
-      interval: plan.interval,
-    });
-
-    console.log('Price calculation:', {
-      basePrice,
-      taxRate,
-      taxAmount,
-      totalPrice
-    });
-  };
-
-  const handleAddressChange = (address: BillingAddress, isValid: boolean) => {
-    setBillingAddress(address);
-    setAddressValid(isValid);
-  };
-
-  const handleTaxInfoChange = (taxInfo: TaxPreview) => {
-    setTaxPreview(taxInfo);
-  };
-
-  const handleContinue = () => {
-    if (step === 'address' && addressValid && billingAddress) {
-      setStep('confirm');
-    }
-  };
-
-  const handleConfirmSubscription = async () => {
-    if (!billingAddress || !email) {
-      setError('Datos incompletos');
-      return;
-    }
-
-    setStep('processing');
     setLoading(true);
     setError(null);
 
     try {
-      // Guardar dirección de facturación primero
-      await saveBillingAddress();
-
-      // Crear sesión de checkout
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      console.log('💳 Creando Payment Intent para modal único');
+      
+      const response = await fetch('/api/stripe/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          priceId: plan.stripePriceId,
-          email: email,
-          billingAddress: {
-            country: billingAddress.country,
-            postalCode: billingAddress.postalCode,
-            city: billingAddress.city,
-            line1: billingAddress.line1,
-            line2: billingAddress.line2,
-            state: billingAddress.state,
-          },
-          metadata: {
-            plan_name: plan.name,
-            plan_id: plan.id,
-            user_id: user?.id,
-          },
+          amount: plan.price * 100, // En céntimos
+          currency: plan.currency.toLowerCase(),
         }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error creating checkout session');
-      }
 
       const data = await response.json();
 
-      if (data.success && data.checkoutUrl) {
-        console.log('✅ Redirecting to Stripe Checkout:', data.sessionId);
-        
-        // Redirigir a Stripe Checkout
-        window.location.href = data.checkoutUrl;
-        
-        // No cerrar el modal aquí porque se está redirigiendo
-      } else {
-        throw new Error(data.error || 'Failed to create checkout session');
+      if (!response.ok) {
+        throw new Error(data.error || 'Error creando Payment Intent');
       }
 
+      setClientSecret(data.clientSecret);
+      setStep('form');
+      console.log('✅ Payment Intent creado:', data.paymentIntentId);
+      console.log('🔑 Client Secret:', data.clientSecret ? 'OK' : 'MISSING');
+
     } catch (error) {
-      console.error('❌ Checkout error:', error);
-      setError(error instanceof Error ? error.message : 'Error desconocido');
-      setStep('confirm'); // Volver al paso de confirmación
+      console.error('❌ Error creando Payment Intent:', error);
+      setError(error instanceof Error ? error.message : 'Error creando Payment Intent');
+      setStep('form'); // Mostrar formulario aunque haya error
+    } finally {
       setLoading(false);
     }
-    // No resetear loading aquí porque se redirige
   };
 
-  const saveBillingAddress = async () => {
-    if (!billingAddress || !user?.id) return;
-
-    try {
-      await fetch('/api/user/billing-address', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          billingAddress,
-          clerkUserId: user.id,
-        }),
-      });
-    } catch (error) {
-      console.error('Error saving billing address:', error);
-      // No bloquear el proceso si falla guardar la dirección
-    }
+  const handleFormSuccess = () => {
+    console.log('🎉 Formulario completado exitosamente');
+    setStep('success');
+    onSuccess?.();
+    
+    // Cerrar modal después de 2 segundos
+    setTimeout(() => {
+      onClose();
+    }, 2000);
   };
+
+  const handleFormError = (error: string) => {
+    console.error('❌ Error en formulario:', error);
+    setError(error);
+  };
+
 
   const handleBack = () => {
-    if (step === 'confirm') {
-      setStep('address');
-    }
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -197,15 +119,15 @@ export function SubscriptionModal({
                 Suscripción a {plan.name}
               </h2>
               <p className="text-gray-600">
-                {step === 'address' && 'Completa tu dirección de facturación'}
-                {step === 'confirm' && 'Confirma tu suscripción'}
+                {step === 'loading' && 'Preparando formulario...'}
+                {step === 'form' && 'Completa tu suscripción'}
                 {step === 'processing' && 'Procesando suscripción...'}
+                {step === 'success' && '¡Suscripción creada exitosamente!'}
               </p>
             </div>
             <button
               onClick={onClose}
-              disabled={step === 'processing'}
-              className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -214,121 +136,81 @@ export function SubscriptionModal({
           </div>
 
           {/* Progress Indicator */}
-          <div className="mb-8">
-            <div className="flex items-center">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                step === 'address' ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'
-              }`}>
-                1
-              </div>
-              <div className={`flex-1 h-1 mx-4 ${
-                ['confirm', 'processing'].includes(step) ? 'bg-green-500' : 'bg-gray-300'
-              }`}></div>
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                step === 'confirm' ? 'bg-blue-600 text-white' : 
-                step === 'processing' ? 'bg-green-500 text-white' : 
-                'bg-gray-300 text-gray-500'
-              }`}>
-                2
-              </div>
-              <div className={`flex-1 h-1 mx-4 ${
-                step === 'processing' ? 'bg-green-500' : 'bg-gray-300'
-              }`}></div>
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                step === 'processing' ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-500'
-              }`}>
-                3
+          {step !== 'success' && (
+            <div className="mb-8">
+              <div className="flex items-center">
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                  step === 'form' ? 'bg-blue-600 text-white' : 'bg-green-500 text-white'
+                }`}>
+                  1
+                </div>
+                <div className={`flex-1 h-1 mx-4 ${
+                  step === 'processing' ? 'bg-green-500' : 'bg-gray-300'
+                }`}></div>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
+                  step === 'processing' ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-500'
+                }`}>
+                  2
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Content */}
           <div className="mb-6">
-            {step === 'address' && (
-              <div>
-                <BillingAddressForm
-                  onAddressChange={handleAddressChange}
-                  onTaxInfoChange={handleTaxInfoChange}
-                  showTaxPreview={true}
-                  className="mb-6"
-                />
+            {step === 'loading' && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Preparando formulario...</p>
               </div>
             )}
 
-            {step === 'confirm' && priceCalculation && (
-              <div className="space-y-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-3">Resumen de suscripción</h3>
-                  
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>{plan.name} ({plan.interval === 'month' ? 'mensual' : 'anual'})</span>
-                      <span>{priceCalculation.basePrice.toFixed(2)} {priceCalculation.currency}</span>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span>{taxPreview?.description}</span>
-                      <span>{priceCalculation.taxAmount.toFixed(2)} {priceCalculation.currency}</span>
-                    </div>
-                    
-                    <div className="border-t pt-2 flex justify-between font-semibold text-lg">
-                      <span>Total</span>
-                      <span>{priceCalculation.totalPrice.toFixed(2)} {priceCalculation.currency}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-3">Dirección de facturación</h3>
-                  {billingAddress && (
-                    <div className="text-sm text-gray-700">
-                      <p>{billingAddress.line1}</p>
-                      {billingAddress.line2 && <p>{billingAddress.line2}</p>}
-                      <p>{billingAddress.postalCode} {billingAddress.city}</p>
-                      {billingAddress.state && <p>{billingAddress.state}</p>}
-                      <p>España</p>
-                    </div>
-                  )}
-                </div>
-
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-800 text-sm">{error}</p>
-                  </div>
-                )}
-              </div>
+            {step === 'form' && (
+              <StripeWrapper clientSecret={clientSecret}>
+                <SubscriptionFormComplete
+                  plan={plan}
+                  clientSecret={clientSecret || ''}
+                  onSuccess={handleFormSuccess}
+                  onError={handleFormError}
+                  onBack={handleBack}
+                />
+              </StripeWrapper>
             )}
 
             {step === 'processing' && (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Redirigiendo a Stripe Checkout...</p>
-                <p className="text-sm text-gray-500 mt-2">Serás redirigido para completar el pago</p>
+                <p className="text-gray-600">Procesando tu suscripción...</p>
+                <p className="text-sm text-gray-500 mt-2">Creando tu acceso premium...</p>
+              </div>
+            )}
+
+            {step === 'success' && (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-gray-900 font-semibold text-lg mb-2">¡Suscripción creada!</p>
+                <p className="text-gray-600">Ya tienes acceso completo a la plataforma</p>
+                <p className="text-sm text-gray-500 mt-2">Cerrando ventana...</p>
+              </div>
+            )}
+
+            {error && step === 'loading' && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">{error}</p>
+                <button 
+                  onClick={() => setStep('form')} 
+                  className="mt-2 text-sm text-blue-600 hover:underline"
+                >
+                  Continuar de todos modos
+                </button>
               </div>
             )}
           </div>
 
-          {/* Actions */}
-          {step !== 'processing' && (
-            <div className="flex gap-3">
-              {step === 'confirm' && (
-                <button
-                  onClick={handleBack}
-                  className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Volver
-                </button>
-              )}
-              
-              <button
-                onClick={step === 'address' ? handleContinue : handleConfirmSubscription}
-                disabled={step === 'address' ? !addressValid : loading}
-                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {step === 'address' ? 'Continuar' : 'Proceder al Pago'}
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

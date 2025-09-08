@@ -52,17 +52,21 @@ export async function getUserSubscriptionStatus(
     });
 
     if (!userWithSubscription || userWithSubscription.subscriptions.length === 0) {
-      console.log(`ℹ️ User ${clerkUserId} has no active subscriptions`);
+      console.log(`ℹ️ [SUBSCRIPTION-STATUS] User ${clerkUserId} has no active subscriptions`);
+      console.log(`🔍 [SUBSCRIPTION-STATUS] UserProfile:`, {
+        found: !!userWithSubscription,
+        subscriptionsCount: userWithSubscription?.subscriptions?.length || 0
+      });
       return {
         isSubscribed: false,
-        accessLevel: 'FREE', // Usuario registrado sin suscripción
+        accessLevel: 'FREE',
       };
     }
 
     const subscription = userWithSubscription.subscriptions[0];
     const plan = subscription.billingPlan;
 
-    console.log(`✅ User ${clerkUserId} has active subscription:`, {
+    console.log(`✅ [SUBSCRIPTION-STATUS] User ${clerkUserId} has active subscription:`, {
       id: subscription.stripeSubscriptionId,
       status: subscription.status,
       planName: plan?.name,
@@ -196,12 +200,33 @@ export async function syncSubscriptionToDB(
       // Continuamos sin fallar - puede que el plan se agregue después
     }
 
-    // Validar fechas antes de convertir
-    const periodStart = stripeSubscription.current_period_start;
-    const periodEnd = stripeSubscription.current_period_end;
+    // Obtener fechas del subscription item (más confiable que top-level)
+    const subscriptionItem = stripeSubscription.items?.data?.[0];
+    const periodStart = stripeSubscription.current_period_start || subscriptionItem?.current_period_start;
+    const periodEnd = stripeSubscription.current_period_end || subscriptionItem?.current_period_end;
+    
+    console.log('🗓️ Subscription period data:', {
+      periodStart,
+      periodEnd,
+      status: stripeSubscription.status,
+      subscriptionId: stripeSubscription.id,
+      created: stripeSubscription.created,
+      hasTopLevelDates: {
+        current_period_start: !!stripeSubscription.current_period_start,
+        current_period_end: !!stripeSubscription.current_period_end
+      },
+      hasItemDates: {
+        current_period_start: !!subscriptionItem?.current_period_start,
+        current_period_end: !!subscriptionItem?.current_period_end
+      }
+    });
     
     if (!periodStart || !periodEnd) {
-      console.error('❌ Invalid period dates from Stripe:', { periodStart, periodEnd });
+      console.error('❌ Invalid period dates from Stripe:', { 
+        periodStart, 
+        periodEnd,
+        subscriptionObject: JSON.stringify(stripeSubscription, null, 2)
+      });
       throw new Error('Invalid period dates from Stripe subscription');
     }
 
