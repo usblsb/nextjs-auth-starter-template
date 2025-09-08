@@ -50,6 +50,7 @@ export function SubscriptionFormComplete({
   const [error, setError] = useState<string | null>(null);
   const [taxPreview, setTaxPreview] = useState<TaxPreview | null>(null);
   const [addressComplete, setAddressComplete] = useState(false);
+  const [billingAddress, setBillingAddress] = useState<any>(null);
 
   // Países permitidos (40 países)
   const allowedCountries = [
@@ -65,6 +66,19 @@ export function SubscriptionFormComplete({
 
     if (complete && value.address) {
       console.log('📍 Dirección completa, calculando impuestos:', value.address);
+      
+      // Guardar dirección para enviar al API después
+      const addressData = {
+        country: value.address.country,
+        postalCode: value.address.postal_code,
+        city: value.address.city,
+        line1: value.address.line1,
+        line2: value.address.line2 || '',
+        state: value.address.state || '',
+      };
+      setBillingAddress(addressData);
+      console.log('💾 Dirección guardada para billing:', addressData);
+      
       await calculateTax(value.address);
     }
   };
@@ -175,7 +189,8 @@ export function SubscriptionFormComplete({
       console.log('🔄 Creando suscripción desde payment:', {
         paymentIntentId,
         priceId: plan.stripePriceId,
-        planName: plan.name
+        planName: plan.name,
+        hasBillingAddress: !!billingAddress
       });
       
       const response = await fetch('/api/stripe/create-subscription-from-payment', {
@@ -186,6 +201,7 @@ export function SubscriptionFormComplete({
         body: JSON.stringify({
           paymentIntentId,
           priceId: plan.stripePriceId,
+          billingAddress: billingAddress, // ← Enviar dirección de facturación
         }),
       });
 

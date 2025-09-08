@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
     console.log('✅ Usuario autenticado:', userId);
 
     // 2. Parsear datos del request
-    const { paymentIntentId, priceId } = await req.json();
+    const { paymentIntentId, priceId, billingAddress } = await req.json();
     
-    console.log('📦 Datos recibidos:', { paymentIntentId, priceId });
+    console.log('📦 Datos recibidos:', { paymentIntentId, priceId, hasBillingAddress: !!billingAddress });
 
     if (!paymentIntentId || !priceId) {
       return NextResponse.json(
@@ -98,6 +98,21 @@ export async function POST(req: NextRequest) {
 
     if (!syncResult.success) {
       console.error('⚠️ Subscription created but failed to sync to DB:', syncResult.error);
+    }
+
+    // 7.5. Guardar dirección de facturación (compliance España)
+    if (billingAddress) {
+      console.log('💳 Guardando dirección de facturación:', billingAddress);
+      const { upsertBillingAddress } = await import('@/lib/services/billingService');
+      
+      const addressResult = await upsertBillingAddress(userId, billingAddress);
+      if (!addressResult.success) {
+        console.error('⚠️ Failed to save billing address:', addressResult.error);
+      } else {
+        console.log('✅ Billing address saved successfully');
+      }
+    } else {
+      console.warn('⚠️ No billing address provided');
     }
 
     // 8. Log de actividad
