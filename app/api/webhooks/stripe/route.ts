@@ -90,6 +90,58 @@ async function handleCheckoutSessionCompleted(event: Stripe.Event) {
   if (session.subscription && typeof session.subscription === 'string') {
     try {
       const subscription = await stripe.subscriptions.retrieve(session.subscription);
+      
+      // CRÍTICO: Adjuntar método de pago al customer para el portal
+      if (subscription.default_payment_method && typeof session.customer === 'string') {
+        try {
+          // Verificar si el payment method ya está adjunto
+          const paymentMethod = await stripe.paymentMethods.retrieve(subscription.default_payment_method as string);
+          
+          if (!paymentMethod.customer || paymentMethod.customer !== session.customer) {
+            // Adjuntar método de pago al customer
+            await stripe.paymentMethods.attach(subscription.default_payment_method as string, {
+              customer: session.customer,
+            });
+            
+            if (DEBUG_MODE) {
+              console.log('🔗 Payment method attached to customer:', {
+                paymentMethod: subscription.default_payment_method,
+                customer: session.customer,
+              });
+            }
+          }
+
+          // Establecer como método de pago predeterminado del customer
+          await stripe.customers.update(session.customer, {
+            invoice_settings: {
+              default_payment_method: subscription.default_payment_method as string,
+            },
+          });
+
+          if (DEBUG_MODE) {
+            console.log('✅ Default payment method set for customer:', session.customer);
+          }
+
+          // Log de la operación crítica
+          await logBillingActivity(clerkUserId, 'PAYMENT_METHOD_ATTACHED', {
+            customerId: session.customer,
+            paymentMethodId: subscription.default_payment_method,
+            subscriptionId: subscription.id,
+            stripeEventId: event.id,
+          }, 'Payment method attached to customer for portal access');
+
+        } catch (attachError) {
+          console.error('⚠️ Error attaching payment method to customer:', attachError);
+          // No fallar el webhook completo por este error, pero registrarlo
+          await logBillingActivity(clerkUserId, 'PAYMENT_METHOD_ATTACH_FAILED', {
+            customerId: session.customer,
+            paymentMethodId: subscription.default_payment_method,
+            error: String(attachError),
+            stripeEventId: event.id,
+          }, 'Failed to attach payment method to customer');
+        }
+      }
+      
       const syncResult = await syncSubscriptionToDB(subscription, clerkUserId);
       
       if (syncResult.success && DEBUG_MODE) {
