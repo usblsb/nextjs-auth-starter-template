@@ -26,9 +26,14 @@ export async function POST(req: NextRequest) {
     console.log('✅ Usuario autenticado:', userId);
 
     // 2. Parsear datos del request
-    const { paymentIntentId, priceId, billingAddress } = await req.json();
+    const { paymentIntentId, priceId, billingAddress, customerName } = await req.json();
     
-    console.log('📦 Datos recibidos:', { paymentIntentId, priceId, hasBillingAddress: !!billingAddress });
+    console.log('📦 Datos recibidos:', { 
+      paymentIntentId, 
+      priceId, 
+      hasBillingAddress: !!billingAddress,
+      hasCustomerName: !!customerName
+    });
 
     if (!paymentIntentId || !priceId) {
       return NextResponse.json(
@@ -70,6 +75,28 @@ export async function POST(req: NextRequest) {
       setup_future_usage: 'Payment method should be automatically attached due to setup_future_usage'
     });
 
+    // 5.5. Actualizar customer con el nombre si está disponible
+    if (customerName && customerId) {
+      const customerNameString = [customerName.firstName, customerName.lastName]
+        .filter(Boolean)
+        .join(' ') || undefined;
+      
+      if (customerNameString) {
+        console.log('👤 Actualizando customer con nombre:', customerNameString);
+        
+        await stripe.customers.update(customerId, {
+          name: customerNameString,
+          metadata: {
+            ...paymentIntent.metadata,
+            first_name: customerName.firstName || '',
+            last_name: customerName.lastName || '',
+          }
+        });
+        
+        console.log('✅ Customer actualizado con nombre:', customerNameString);
+      }
+    }
+
     // 6. Crear suscripción usando el payment method (ya attached debido a setup_future_usage)
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
@@ -105,14 +132,19 @@ export async function POST(req: NextRequest) {
       console.log('💳 Guardando dirección de facturación:', billingAddress);
       const { upsertBillingAddress } = await import('@/lib/services/billingService');
       
-      // Extraer nombre del PaymentIntent (viene del formulario de pago)
-      const billingDetails = paymentIntent.shipping?.name || paymentIntent.charges?.data?.[0]?.billing_details?.name;
-      let firstName, lastName;
+      // Usar el nombre del formulario (preferencia) o extraer del PaymentIntent como fallback
+      let firstName = customerName?.firstName;
+      let lastName = customerName?.lastName;
       
-      if (billingDetails) {
-        const nameParts = billingDetails.split(' ');
-        firstName = nameParts[0];
-        lastName = nameParts.slice(1).join(' ') || undefined;
+      // Fallback: extraer nombre del PaymentIntent si no viene del formulario
+      if (!firstName && !lastName) {
+        const billingDetails = paymentIntent.shipping?.name || paymentIntent.charges?.data?.[0]?.billing_details?.name;
+        
+        if (billingDetails) {
+          const nameParts = billingDetails.split(' ');
+          firstName = nameParts[0];
+          lastName = nameParts.slice(1).join(' ') || undefined;
+        }
       }
       
       const addressWithName = {
@@ -120,6 +152,8 @@ export async function POST(req: NextRequest) {
         firstName,
         lastName
       };
+      
+      console.log('👤 Guardando dirección con nombre:', { firstName, lastName });
       
       const addressResult = await upsertBillingAddress(userId, addressWithName);
       if (!addressResult.success) {

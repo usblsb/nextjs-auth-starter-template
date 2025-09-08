@@ -51,6 +51,7 @@ export function SubscriptionFormComplete({
   const [taxPreview, setTaxPreview] = useState<TaxPreview | null>(null);
   const [addressComplete, setAddressComplete] = useState(false);
   const [billingAddress, setBillingAddress] = useState<any>(null);
+  const [customerName, setCustomerName] = useState<{firstName: string, lastName: string} | null>(null);
 
   // Países permitidos (40 países)
   const allowedCountries = [
@@ -78,6 +79,16 @@ export function SubscriptionFormComplete({
       };
       setBillingAddress(addressData);
       console.log('💾 Dirección guardada para billing:', addressData);
+      
+      // Guardar nombre del cliente si está disponible
+      if (value.firstName || value.lastName) {
+        const nameData = {
+          firstName: value.firstName || '',
+          lastName: value.lastName || ''
+        };
+        setCustomerName(nameData);
+        console.log('👤 Nombre guardado:', nameData);
+      }
       
       await calculateTax(value.address);
     }
@@ -202,6 +213,7 @@ export function SubscriptionFormComplete({
           paymentIntentId,
           priceId: plan.stripePriceId,
           billingAddress: billingAddress, // ← Enviar dirección de facturación
+          customerName: customerName, // ← Enviar nombre del cliente
         }),
       });
 

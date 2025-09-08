@@ -59,6 +59,7 @@
 - ✅ **Sistema de Templates** reutilizable
 - ✅ **Webhooks de Stripe** con Stripe CLI para desarrollo local
 - ✅ **Historial de Direcciones de Facturación** (compliance legal España)
+- ✅ **Captura de Nombres en Suscripciones** (firstName/lastName)
 - ✅ **Documentación Técnica** completa
 
 ## 🚀 Origen del Proyecto
@@ -125,8 +126,28 @@ El proyecto incluye integración completa con Stripe para:
 
 - **Webhooks automáticos** que capturan cambios de direcciones de billing
 - **Historial completo** de direcciones para compliance legal (España)
+- **Captura de nombres** (firstName/lastName) en suscripciones
 - **Desarrollo local** usando Stripe CLI para túneles seguros
 - **Logging completo** en base de datos para auditorías
+
+### 🔐 Separación de Responsabilidades: Clerk vs Stripe
+
+**Clerk** (Autenticación únicamente):
+- ✅ **Email** y **contraseña** del usuario
+- ✅ Gestión de sesiones y autenticación
+- ✅ Verificación de email
+- ❌ **NO** almacena nombres, direcciones ni datos de facturación
+
+**Stripe** (Datos de suscripción y facturación):
+- ✅ **Nombres** (firstName/lastName) capturados durante suscripción
+- ✅ **Direcciones de facturación** completas
+- ✅ Métodos de pago y suscripciones
+- ✅ Historial de cambios para compliance legal (10 años en España)
+
+**Flujo de datos:**
+1. Usuario se registra en **Clerk** → Solo email/password
+2. Usuario se suscribe → **Formulario captura nombre + dirección** → Stripe Customer
+3. Cambios futuros → **Portal de Stripe** → Webhooks → Nueva entrada en BD
 
 ### Configuración Webhooks Stripe
 
@@ -143,8 +164,59 @@ El proyecto incluye integración completa con Stripe para:
 
 3. **Compliance legal:**
    - Cada cambio de dirección crea **nueva entrada** (no actualiza)
-   - Historial completo mantenido en `user_billing_address`
+   - Historial completo mantenido en `user_billing_address` con **firstName/lastName**
    - Cliente solo ve dirección actual, sistema mantiene historial completo
+
+### 🔄 Implementación Captura de Nombres
+
+**Formulario de Suscripción** (`SubscriptionFormComplete.tsx`):
+```typescript
+// AddressElement configurado para capturar nombre dividido
+<AddressElement
+  options={{
+    display: { name: 'split' },  // firstName + lastName
+    defaultValues: { name: user?.fullName || '' }
+  }}
+/>
+```
+
+**API de Suscripción** (`/api/stripe/create-subscription-from-payment`):
+```typescript
+// 1. Actualizar customer de Stripe con nombre completo
+await stripe.customers.update(customerId, {
+  name: `${firstName} ${lastName}`,
+  metadata: { first_name: firstName, last_name: lastName }
+});
+
+// 2. Guardar en BD para compliance
+await upsertBillingAddress(userId, {
+  ...billingAddress,
+  firstName,
+  lastName
+});
+```
+
+**Webhook de Stripe** (`/api/webhooks/stripe`):
+```typescript
+// Capturar nombre desde múltiples fuentes
+const name = customer.name || customer.shipping?.name;
+const [firstName, ...lastNameParts] = name?.split(' ') || [];
+const lastName = lastNameParts.join(' ') || undefined;
+
+// Crear nueva entrada (no actualizar)
+await prisma.userBillingAddress.create({
+  data: { userId, firstName, lastName, ...address }
+});
+```
+
+**Base de Datos** (Prisma Schema):
+```prisma
+model UserBillingAddress {
+  firstName    String?     @db.VarChar(100)  // ✅ Nuevo
+  lastName     String?     @db.VarChar(100)  // ✅ Nuevo
+  // ... resto de campos de dirección
+}
+```
 
 ## Estructura
 

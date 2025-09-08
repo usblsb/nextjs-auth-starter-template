@@ -481,7 +481,20 @@ async function handleCustomerEvent(event: Stripe.Event) {
       email: customer.email,
       clerkUserId: customer.metadata?.clerk_user_id,
       address: customer.address,
+      name: customer.name,
+      // DEBUGGING: Ver todos los campos disponibles
+      allCustomerFields: {
+        name: customer.name,
+        description: customer.description,
+        phone: customer.phone,
+        shipping: customer.shipping,
+        metadata: customer.metadata,
+        invoice_settings: customer.invoice_settings,
+      }
     });
+    
+    // Log completo del customer para debugging
+    console.log('🔍 [DEBUG] Customer object completo:', JSON.stringify(customer, null, 2));
   }
 
   const clerkUserId = customer.metadata?.clerk_user_id;
@@ -494,11 +507,44 @@ async function handleCustomerEvent(event: Stripe.Event) {
   // Si el customer tiene dirección y es un evento de actualización, guardarla
   if (eventType === 'customer.updated' && customer.address) {
     try {
-      // Extraer nombre y apellido del customer
-      const customerName = {
-        firstName: customer.name ? customer.name.split(' ')[0] : undefined,
-        lastName: customer.name ? customer.name.split(' ').slice(1).join(' ') : undefined
-      };
+      // Buscar nombre en múltiples fuentes
+      let customerName = { firstName: undefined, lastName: undefined };
+      
+      // 1. Buscar en customer.name
+      if (customer.name) {
+        const nameParts = customer.name.split(' ');
+        customerName.firstName = nameParts[0];
+        customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+      }
+      // 2. Buscar en customer.shipping.name
+      else if (customer.shipping?.name) {
+        const nameParts = customer.shipping.name.split(' ');
+        customerName.firstName = nameParts[0];
+        customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+      }
+      // 3. Buscar en invoice_settings si existe
+      else if (customer.invoice_settings?.custom_fields?.length > 0) {
+        // Buscar campo de nombre en custom fields
+        const nameField = customer.invoice_settings.custom_fields.find(
+          field => field.name.toLowerCase().includes('name')
+        );
+        if (nameField?.value) {
+          const nameParts = nameField.value.split(' ');
+          customerName.firstName = nameParts[0];
+          customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+        }
+      }
+      
+      if (DEBUG_MODE) {
+        console.log('🔍 Name extraction result:', {
+          customerName,
+          sources: {
+            customerName: customer.name,
+            shippingName: customer.shipping?.name,
+            customFields: customer.invoice_settings?.custom_fields?.length || 0
+          }
+        });
+      }
       
       await saveBillingAddressFromStripe(clerkUserId, customer.address, customerName, event.id);
       console.log(`✅ Billing address with name saved for customer ${customer.id}`);
