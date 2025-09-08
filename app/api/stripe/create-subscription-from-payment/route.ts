@@ -3,7 +3,7 @@
  * Se llama después de que Payment Element complete el pago exitosamente
  */
 
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe/client';
 import { syncSubscriptionToDB, logBillingActivity } from '@/lib/services/billingService';
@@ -100,16 +100,32 @@ export async function POST(req: NextRequest) {
       console.error('⚠️ Subscription created but failed to sync to DB:', syncResult.error);
     }
 
-    // 7.5. Guardar dirección de facturación (compliance España)
+    // 7.5. Guardar dirección de facturación con nombre/apellido (compliance España)
     if (billingAddress) {
       console.log('💳 Guardando dirección de facturación:', billingAddress);
       const { upsertBillingAddress } = await import('@/lib/services/billingService');
       
-      const addressResult = await upsertBillingAddress(userId, billingAddress);
+      // Extraer nombre del PaymentIntent (viene del formulario de pago)
+      const billingDetails = paymentIntent.shipping?.name || paymentIntent.charges?.data?.[0]?.billing_details?.name;
+      let firstName, lastName;
+      
+      if (billingDetails) {
+        const nameParts = billingDetails.split(' ');
+        firstName = nameParts[0];
+        lastName = nameParts.slice(1).join(' ') || undefined;
+      }
+      
+      const addressWithName = {
+        ...billingAddress,
+        firstName,
+        lastName
+      };
+      
+      const addressResult = await upsertBillingAddress(userId, addressWithName);
       if (!addressResult.success) {
         console.error('⚠️ Failed to save billing address:', addressResult.error);
       } else {
-        console.log('✅ Billing address saved successfully');
+        console.log('✅ Billing address with name saved successfully');
       }
     } else {
       console.warn('⚠️ No billing address provided');

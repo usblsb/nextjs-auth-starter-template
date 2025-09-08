@@ -358,6 +358,7 @@ async function handlePaymentFailed(event: Stripe.Event) {
 async function saveBillingAddressFromStripe(
   clerkUserId: string,
   stripeAddress: Stripe.Address,
+  customerName: { firstName?: string; lastName?: string } | null,
   eventId: string
 ): Promise<void> {
   if (!stripeAddress) return;
@@ -378,6 +379,8 @@ async function saveBillingAddressFromStripe(
     const newAddressEntry = await prisma.userBillingAddress.create({
       data: {
         userId: clerkUserId,
+        firstName: customerName?.firstName || null,
+        lastName: customerName?.lastName || null,
         country: stripeAddress.country || '',
         state: stripeAddress.state || null,
         city: stripeAddress.city || '',
@@ -439,8 +442,14 @@ async function handleCustomerEvent(event: Stripe.Event) {
   // Si el customer tiene dirección y es un evento de actualización, guardarla
   if (eventType === 'customer.updated' && customer.address) {
     try {
-      await saveBillingAddressFromStripe(clerkUserId, customer.address, event.id);
-      console.log(`✅ Billing address saved for customer ${customer.id}`);
+      // Extraer nombre y apellido del customer
+      const customerName = {
+        firstName: customer.name ? customer.name.split(' ')[0] : undefined,
+        lastName: customer.name ? customer.name.split(' ').slice(1).join(' ') : undefined
+      };
+      
+      await saveBillingAddressFromStripe(clerkUserId, customer.address, customerName, event.id);
+      console.log(`✅ Billing address with name saved for customer ${customer.id}`);
     } catch (error) {
       console.error('❌ Error saving billing address:', error);
     }

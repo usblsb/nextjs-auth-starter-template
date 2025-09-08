@@ -316,6 +316,8 @@ export async function upsertBillingAddress(
     line1: string;
     line2?: string;
     state?: string;
+    firstName?: string;
+    lastName?: string;
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -326,6 +328,8 @@ export async function upsertBillingAddress(
     const newAddressEntry = await prisma.userBillingAddress.create({
       data: {
         userId: clerkUserId,
+        firstName: address.firstName,
+        lastName: address.lastName,
         country: address.country,
         state: address.state,
         city: address.city,
