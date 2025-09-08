@@ -4,6 +4,8 @@
  * Esta ruta debe ser accesible por todos los visitantes
  */
 
+import Link from 'next/link';
+
 export default function CursoIntroduccionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 py-8">
@@ -84,18 +86,18 @@ export default function CursoIntroduccionPage() {
                 Regístrate gratis para acceder a más contenido y cursos avanzados.
               </p>
               <div className="space-x-4">
-                <a
+                <Link
                   href="/sign-up"
                   className="inline-flex items-center px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md transition-colors"
                 >
                   Registro Gratuito
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/web-dashboard/billing"
                   className="inline-flex items-center px-6 py-3 text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg shadow-md transition-all"
                 >
                   💎 Ver Premium
-                </a>
+                </Link>
               </div>
             </div>
           </div>
