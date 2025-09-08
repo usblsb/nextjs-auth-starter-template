@@ -1,6 +1,6 @@
 /**
  * Página de prueba del sistema de suscripciones
- * Acceso: FREE (requiere login pero no suscripción)
+ * Acceso: OPEN (accesible públicamente para SEO, control granular por secciones)
  */
 
 import SubscriptionGate from '@/app/components/subscription/SubscriptionGate';
@@ -14,7 +14,7 @@ export default function TestSubscriptionPage() {
             🧪 Prueba del Sistema de Suscripciones
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Esta página requiere nivel FREE (estar logueado) según el middleware
+            Esta página es OPEN (pública) - El control de acceso se maneja por secciones
           </p>
         </div>
 
@@ -69,10 +69,10 @@ export default function TestSubscriptionPage() {
                 <strong>Ruta actual:</strong> /test-subscription
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>Nivel requerido por middleware:</strong> FREE (según protectedRoutes)
+                <strong>Nivel requerido por middleware:</strong> OPEN (según protectedRoutes)
               </p>
               <p className="text-gray-700 dark:text-gray-300">
-                <strong>Estado:</strong> Si puedes ver esta página, el middleware te permitió acceder
+                <strong>Estado:</strong> Esta página es accesible públicamente para SEO
               </p>
             </div>
           </section>

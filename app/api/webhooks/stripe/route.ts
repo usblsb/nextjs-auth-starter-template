@@ -504,36 +504,37 @@ async function handleCustomerEvent(event: Stripe.Event) {
     return { success: true };
   }
 
+  // Buscar nombre en múltiples fuentes (siempre, para logging)
+  let customerName = { firstName: undefined, lastName: undefined };
+  
+  // 1. Buscar en customer.name
+  if (customer.name) {
+    const nameParts = customer.name.split(' ');
+    customerName.firstName = nameParts[0];
+    customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+  }
+  // 2. Buscar en customer.shipping.name
+  else if (customer.shipping?.name) {
+    const nameParts = customer.shipping.name.split(' ');
+    customerName.firstName = nameParts[0];
+    customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+  }
+  // 3. Buscar en invoice_settings si existe
+  else if (customer.invoice_settings?.custom_fields?.length > 0) {
+    // Buscar campo de nombre en custom fields
+    const nameField = customer.invoice_settings.custom_fields.find(
+      field => field.name.toLowerCase().includes('name')
+    );
+    if (nameField?.value) {
+      const nameParts = nameField.value.split(' ');
+      customerName.firstName = nameParts[0];
+      customerName.lastName = nameParts.slice(1).join(' ') || undefined;
+    }
+  }
+
   // Si el customer tiene dirección y es un evento de actualización, guardarla
   if (eventType === 'customer.updated' && customer.address) {
     try {
-      // Buscar nombre en múltiples fuentes
-      let customerName = { firstName: undefined, lastName: undefined };
-      
-      // 1. Buscar en customer.name
-      if (customer.name) {
-        const nameParts = customer.name.split(' ');
-        customerName.firstName = nameParts[0];
-        customerName.lastName = nameParts.slice(1).join(' ') || undefined;
-      }
-      // 2. Buscar en customer.shipping.name
-      else if (customer.shipping?.name) {
-        const nameParts = customer.shipping.name.split(' ');
-        customerName.firstName = nameParts[0];
-        customerName.lastName = nameParts.slice(1).join(' ') || undefined;
-      }
-      // 3. Buscar en invoice_settings si existe
-      else if (customer.invoice_settings?.custom_fields?.length > 0) {
-        // Buscar campo de nombre en custom fields
-        const nameField = customer.invoice_settings.custom_fields.find(
-          field => field.name.toLowerCase().includes('name')
-        );
-        if (nameField?.value) {
-          const nameParts = nameField.value.split(' ');
-          customerName.firstName = nameParts[0];
-          customerName.lastName = nameParts.slice(1).join(' ') || undefined;
-        }
-      }
       
       if (DEBUG_MODE) {
         console.log('🔍 Name extraction result:', {
@@ -553,13 +554,21 @@ async function handleCustomerEvent(event: Stripe.Event) {
     }
   }
 
-  // Log del evento de customer
+  // Log del evento de customer con datos completos
   await logBillingActivity(clerkUserId, `CUSTOMER_${eventType.split('.')[1].toUpperCase()}`, {
     customerId: customer.id,
     email: customer.email,
+    name: customer.name,
+    firstName: customerName?.firstName || null,
+    lastName: customerName?.lastName || null,
+    phone: customer.phone,
     address: customer.address,
+    shipping: customer.shipping,
+    metadata: customer.metadata,
     eventType,
     stripeEventId: event.id,
+    timestamp: new Date().toISOString(),
+    service: 'stripe'
   }, `Customer ${eventType} event`);
 
   return { success: true };

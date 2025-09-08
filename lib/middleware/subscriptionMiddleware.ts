@@ -36,6 +36,11 @@ export const protectedRoutes: RouteProtection[] = [
     requiredLevel: 'OPEN',
     description: 'Páginas institucionales - acceso público'
   },
+  {
+    pattern: /^\/test-subscription/,
+    requiredLevel: 'OPEN',
+    description: 'Página de prueba de suscripciones - acceso público para SEO'
+  },
   
   // Rutas FREE - requieren login pero sin suscripción
   {
