@@ -3,9 +3,9 @@
  * Detecta automáticamente IVA (21%) vs IGIC (7%) según ubicación
  */
 
-import { stripeConfig } from '@/lib/stripe/config';
-import { stripe } from '@/lib/stripe/client';
-import type { CustomerTaxInfo, TaxConfiguration } from '@/lib/stripe/types';
+import { stripeConfig } from '../stripe/config';
+import { stripe } from '../stripe/client';
+import type { CustomerTaxInfo, TaxConfiguration } from '../stripe/types';
 
 // ID del Tax Rate para IGIC Canarias (se configurará en Stripe Dashboard)
 const IGIC_TAX_RATE_ID = 'txr_canary_islands_igic_7'; // Placeholder
@@ -44,11 +44,11 @@ export function determineTaxConfiguration(address: {
     };
   }
   
-  // España: Verificar si es Canarias
+  // España: Canarias usa IGIC 7% manual, Continental usa IVA automático
   const isCanaryIslands = postalCode ? isCanaryIslandsPostalCode(postalCode) : false;
   
   if (isCanaryIslands) {
-    // Canarias: IGIC 7% (manual via Tax Rates)
+    // Canarias: IGIC 7% con Tax Rate manual
     return {
       country,
       postalCode,
@@ -56,13 +56,12 @@ export function determineTaxConfiguration(address: {
       region: 'canary_islands',
       taxConfig: {
         type: 'manual',
-        rate: stripeConfig.tax.canaryIslands.igicRate,
-        description: stripeConfig.tax.canaryIslands.description,
-        taxRateId: IGIC_TAX_RATE_ID,
+        rate: 0.07, // 7% IGIC
+        description: 'IGIC Canarias 7% (manual)',
       },
     };
   } else {
-    // España Continental: IVA 21% (automático via Stripe Tax)
+    // España Continental: IVA automático via Stripe Tax
     return {
       country,
       postalCode,
@@ -70,8 +69,7 @@ export function determineTaxConfiguration(address: {
       region: 'mainland',
       taxConfig: {
         type: 'automatic',
-        rate: stripeConfig.tax.spain.vatRate,
-        description: stripeConfig.tax.spain.description,
+        description: 'IVA España via Stripe Tax (automático)',
       },
     };
   }
@@ -170,7 +168,7 @@ export async function getCustomerTaxInfo(customerId: string): Promise<CustomerTa
       return null;
     }
     
-    const address = customer.address;
+    const address = 'address' in customer ? customer.address : null;
     if (!address?.country) {
       return null;
     }
