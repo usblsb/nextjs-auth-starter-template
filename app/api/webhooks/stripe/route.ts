@@ -505,7 +505,7 @@ async function handleCustomerEvent(event: Stripe.Event) {
   }
 
   // Buscar nombre en múltiples fuentes (siempre, para logging)
-  let customerName = { firstName: undefined, lastName: undefined };
+  let customerName: { firstName?: string; lastName?: string } = { firstName: undefined, lastName: undefined };
   
   // 1. Buscar en customer.name
   if (customer.name) {
@@ -520,7 +520,7 @@ async function handleCustomerEvent(event: Stripe.Event) {
     customerName.lastName = nameParts.slice(1).join(' ') || undefined;
   }
   // 3. Buscar en invoice_settings si existe
-  else if (customer.invoice_settings?.custom_fields?.length > 0) {
+  else if (customer.invoice_settings?.custom_fields && customer.invoice_settings.custom_fields.length > 0) {
     // Buscar campo de nombre en custom fields
     const nameField = customer.invoice_settings.custom_fields.find(
       field => field.name.toLowerCase().includes('name')

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +21,7 @@ interface SubscriptionResult {
   error?: string;
 }
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const [result, setResult] = useState<SubscriptionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -258,5 +258,24 @@ export default function BillingSuccessPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-2xl mx-auto">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p>Procesando resultado del pago...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <BillingSuccessContent />
+    </Suspense>
   );
 }

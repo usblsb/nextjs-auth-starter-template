@@ -114,9 +114,9 @@ export async function POST(req: NextRequest) {
     console.log('📊 Subscription details:', {
       id: subscription.id,
       status: subscription.status,
-      current_period_start: subscription.current_period_start,
-      current_period_end: subscription.current_period_end,
-      created: subscription.created,
+      current_period_start: (subscription as any).current_period_start,
+      current_period_end: (subscription as any).current_period_end,
+      created: (subscription as any).created,
       items: subscription.items.data.length
     });
 
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
       
       // Fallback: extraer nombre del PaymentIntent si no viene del formulario
       if (!firstName && !lastName) {
-        const billingDetails = paymentIntent.shipping?.name || paymentIntent.charges?.data?.[0]?.billing_details?.name;
+        const billingDetails = paymentIntent.shipping?.name || (paymentIntent as any).charges?.data?.[0]?.billing_details?.name;
         
         if (billingDetails) {
           const nameParts = billingDetails.split(' ');
