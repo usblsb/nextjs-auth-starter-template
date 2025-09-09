@@ -67,3 +67,5 @@ backup-posgresql-neon
 .env.error
 test-tools
 backups
+test
+/test
