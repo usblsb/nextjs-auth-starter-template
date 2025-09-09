@@ -58,3 +58,4 @@ backup
 backup-posgresql-neon
 test-tools
 backups
+.copias-posgresql-del-proyecto
