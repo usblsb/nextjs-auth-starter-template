@@ -93,9 +93,9 @@ export const contenidoPagesFooter = (
 		</p>
 
 		<p>
-			Toda la información y datos personales que nos facilite al utilizar este
-			Sitio Web serán tratados con arreglo a nuestra&nbsp;
-			<strong>Política de Privacidad</strong>.
+			El contrato se formalizará en&nbsp;<strong>español</strong>, idioma en el
+			que están disponibles las "Condiciones" y las "Políticas de protección de
+			datos" en nuestro Sitio Web.
 		</p>
 
 		<h2>4. USO DE NUESTRO SITIO WEB Y/O APLICACIÓN</h2>

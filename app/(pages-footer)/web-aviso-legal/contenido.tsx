@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export const contenidoPagesFooter = (
 	<>
 		<h1>- Aviso Legal -</h1>
@@ -53,10 +55,12 @@ export const contenidoPagesFooter = (
 
 		<div className="flex justify-center my-8">
 			<figure className="p-6">
-				<img
+				<Image
 					src="/images/images-pages-footer/titular.jpg"
 					alt="Información del titular de la web"
 					className="max-w-full h-auto rounded"
+					width={400}
+					height={300}
 				/>
 			</figure>
 		</div>
