@@ -1,8 +1,10 @@
-/* Estilos específicos solo para páginas del footer - Migrado a Tailwind v4 */
+/* Estilos específicos solo para páginas del footer - Con soporte modo claro/oscuro */
+
+/* Títulos principales */
 h1 {
 	font-size: 2.25rem;
 	font-weight: 700;
-	color: rgb(17 24 39);
+	color: var(--color-foreground);
 	letter-spacing: -0.025em;
 	text-align: center;
 	line-height: 1;
@@ -20,10 +22,11 @@ h1 {
 	}
 }
 
+/* Subtítulos */
 h2 {
 	font-size: 1.5rem;
 	font-weight: 600;
-	color: rgb(17 24 39);
+	color: var(--color-foreground);
 	margin-top: 1.5rem;
 	margin-bottom: 0.75rem;
 	line-height: 1.25;
@@ -32,7 +35,7 @@ h2 {
 h3 {
 	font-size: 1.25rem;
 	font-weight: 500;
-	color: rgb(17 24 39);
+	color: var(--color-foreground);
 	margin-top: 1rem;
 	margin-bottom: 0.5rem;
 	line-height: 1.375;
@@ -41,22 +44,25 @@ h3 {
 h4 {
 	font-size: 1.125rem;
 	font-weight: 500;
-	color: rgb(17 24 39);
+	color: var(--color-foreground);
 	margin-top: 0.75rem;
 	margin-bottom: 0.5rem;
 	line-height: 1.5;
 }
 
+/* Texto de párrafos */
 p {
-	color: rgb(55 65 81);
+	color: var(--color-muted-foreground);
 	line-height: 1.75;
 	margin-bottom: 1rem;
 }
 
+/* Listas */
 ul,
 ol {
 	margin-left: 1.5rem;
 	margin-bottom: 1rem;
+	color: var(--color-muted-foreground);
 }
 
 ul > li + li,
@@ -65,13 +71,82 @@ ol > li + li {
 }
 
 li {
-	color: rgb(55 65 81);
+	color: var(--color-muted-foreground);
+	line-height: 1.6;
 }
 
+/* Elementos de énfasis */
+em {
+	color: var(--color-foreground);
+	font-style: italic;
+}
+
+strong,
+b {
+	color: var(--color-foreground);
+	font-weight: 600;
+}
+
+/* Separadores */
 hr {
 	margin-top: 1.5rem;
 	margin-bottom: 1.5rem;
-	border-color: rgb(209 213 219);
+	border-color: var(--color-border);
+}
+
+/* Enlaces dentro del contenido */
+a {
+	color: var(--color-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+a:hover {
+	color: var(--color-primary);
+	opacity: 0.8;
+}
+
+/* Código inline */
+code {
+	background-color: var(--color-muted);
+	color: var(--color-foreground);
+	padding: 0.125rem 0.25rem;
+	border-radius: 0.25rem;
+	font-size: 0.875em;
+	font-family: var(--font-mono);
+}
+
+/* Blockquotes */
+blockquote {
+	border-left: 4px solid var(--color-border);
+	padding-left: 1rem;
+	margin: 1rem 0;
+	color: var(--color-muted-foreground);
+	font-style: italic;
+}
+
+/* Tablas */
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1rem 0;
+}
+
+th,
+td {
+	border: 1px solid var(--color-border);
+	padding: 0.5rem;
+	text-align: left;
+}
+
+th {
+	background-color: var(--color-muted);
+	color: var(--color-foreground);
+	font-weight: 600;
+}
+
+td {
+	color: var(--color-muted-foreground);
 }
 
 br {
