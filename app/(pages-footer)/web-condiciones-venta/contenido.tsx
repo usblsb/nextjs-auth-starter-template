@@ -21,7 +21,7 @@ export const contenidoPagesFooter = (
 			en él mencionados) establece las condiciones por las que se rige el uso de
 			esta página web y la compra o suscripción de servicios en la misma,
 			cualquiera que sea el aplicativo, medio digital, soporte o dispositivo a
-			través del que se pueda acceder. Le rogamos que lea atentamente las
+			través del cual se pueda acceder. Le rogamos que lea atentamente las
 			presentes&nbsp;
 			<strong>Condiciones Generales de la Contratación</strong> (en adelante,
 			las&nbsp;<strong>Condiciones</strong>), así como el Aviso Legal, la
