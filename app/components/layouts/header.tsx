@@ -7,6 +7,7 @@ import { useUser, useAuth } from "@clerk/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/app/components/theme-toggle";
 
 export default function Header() {
   const { user } = useUser();
@@ -66,8 +67,14 @@ export default function Header() {
                   Inicio
                 </Link>
                 
+                {/* Theme Toggle Mobile */}
+                <div className="flex items-center justify-between pt-4 pb-2">
+                  <span className="text-sm font-medium text-foreground/60">Tema</span>
+                  <ThemeToggle />
+                </div>
+
                 {/* Mobile Auth Buttons */}
-                <div className="flex flex-col space-y-2 pt-4">
+                <div className="flex flex-col space-y-2 pt-2">
                   {!user ? (
                     <>
                       <Link href="/sign-up" onClick={closeSheet}>
@@ -117,7 +124,7 @@ export default function Header() {
             </Link>
           </nav>
           
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons and Theme Toggle */}
           <div className="flex items-center space-x-2">
             {!user ? (
               <>
@@ -144,6 +151,7 @@ export default function Header() {
                 </Button>
               </>
             )}
+            <ThemeToggle />
           </div>
         </div>
       </div>

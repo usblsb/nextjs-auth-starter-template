@@ -6,7 +6,6 @@
 // Validar variables de entorno requeridas
 const requiredEnvVars = {
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-  STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
 } as const;
 
 // Verificar que todas las variables estén configuradas
@@ -19,7 +18,7 @@ for (const [key, value] of Object.entries(requiredEnvVars)) {
 export const stripeConfig = {
   // Claves API
   secretKey: requiredEnvVars.STRIPE_SECRET_KEY,
-  publishableKey: requiredEnvVars.STRIPE_PUBLISHABLE_KEY,
+  publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   
   // Configuración webhook
   webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
