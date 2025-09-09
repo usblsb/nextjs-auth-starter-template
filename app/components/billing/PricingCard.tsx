@@ -1,11 +1,16 @@
 /**
  * Tarjeta individual de plan de precios
  * Muestra información detallada del plan con precios incluyendo impuestos
+ * Refactorizada con shadcn/ui components y diseño mobile-first
  */
 
 'use client';
 
 import { LoadingSpinner } from './LoadingSpinner';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Check } from 'lucide-react';
 import type { BillingPlan } from '@/lib/stripe/types';
 
 interface PricingCardProps {
@@ -71,74 +76,73 @@ export function PricingCard({
   };
 
   return (
-    <div className={`
-      relative bg-white dark:bg-gray-800 rounded-xl border-2 transition-all duration-200 hover:shadow-lg
+    <Card className={`
+      relative w-full transition-all duration-200 hover:shadow-lg
       ${isCurrentPlan 
-        ? 'border-green-500 dark:border-green-400' 
+        ? 'border-green-500 dark:border-green-400 bg-green-50/50 dark:bg-green-950/20' 
         : isRecommended 
-        ? 'border-blue-500 dark:border-blue-400' 
-        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+        ? 'border-primary shadow-md' 
+        : 'border-border hover:border-primary/30'
       }
     `}>
       {/* Badge recomendado */}
       {isRecommended && !isCurrentPlan && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+          <Badge variant="default" className="font-medium">
             Recomendado
-          </span>
+          </Badge>
         </div>
       )}
 
       {/* Badge plan actual */}
       {isCurrentPlan && (
-        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+        <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+          <Badge variant="secondary" className="border-green-500 bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300">
             Plan Actual
-          </span>
+          </Badge>
         </div>
       )}
 
       {/* Badge ahorro anual */}
       {plan.savings && (
-        <div className="absolute -top-3 -right-3">
-          <span className="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+        <div className="absolute -top-2 -right-2 z-10">
+          <Badge variant="destructive" className="text-xs font-medium bg-orange-500 hover:bg-orange-600">
             Ahorra {plan.savings.percentageOff}%
-          </span>
+          </Badge>
         </div>
       )}
 
-      <div className="p-6">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            {plan.name}
-          </h3>
-          {plan.description && (
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              {plan.description}
-            </p>
-          )}
-        </div>
+      <CardHeader className="text-center pb-4">
+        <CardTitle className="text-lg lg:text-xl font-bold">
+          {plan.name}
+        </CardTitle>
+        {plan.description && (
+          <CardDescription className="text-sm">
+            {plan.description}
+          </CardDescription>
+        )}
+      </CardHeader>
 
+      <CardContent className="px-6 pb-6">
         {/* Precio */}
         <div className="text-center mb-6">
           {isFree ? (
-            <div className="text-4xl font-bold text-gray-900 dark:text-white">
+            <div className="text-3xl lg:text-4xl font-bold">
               Gratis
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-2">
               {/* Precio total */}
-              <div className="text-4xl font-bold text-gray-900 dark:text-white">
+              <div className="text-3xl lg:text-4xl font-bold">
                 {formatPrice(pricing.totalPrice)}
-                <span className="text-lg font-normal text-gray-500 dark:text-gray-400">
+                <span className="text-base lg:text-lg font-normal text-muted-foreground">
                   /{getIntervalText(pricing.interval)}
                 </span>
               </div>
               
               {/* Desglose de impuestos */}
               {pricing.taxAmount > 0 && (
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="text-xs lg:text-sm text-muted-foreground">
                   Base: {formatPrice(pricing.basePrice)} + {formatPrice(pricing.taxAmount)} 
                   <span className="ml-1">
                     ({plan.taxInfo?.description || `${Math.round(pricing.taxRate * 100)}% impuestos`})
@@ -148,7 +152,7 @@ export function PricingCard({
 
               {/* Ahorro anual */}
               {plan.savings && (
-                <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                <div className="text-xs lg:text-sm text-green-600 dark:text-green-400 font-medium">
                   Ahorras {formatPrice(plan.savings.annualSavings)} al año
                   <br />
                   <span className="text-xs">
@@ -161,36 +165,36 @@ export function PricingCard({
         </div>
 
         {/* Características */}
-        <div className="mb-6">
+        <div className="space-y-3">
+          <h4 className="font-medium text-sm text-muted-foreground">Incluye:</h4>
           <ul className="space-y-2">
             {plan.features.map((feature, index) => (
-              <li key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <svg className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                {feature === 'OPEN' && 'Acceso a contenido abierto'}
-                {feature === 'FREE' && 'Acceso a contenido gratuito'}
-                {feature === 'PREMIUM' && 'Acceso a contenido premium'}
+              <li key={index} className="flex items-center text-sm">
+                <Check className="h-4 w-4 text-green-500 mr-3 flex-shrink-0" />
+                <span>
+                  {feature === 'OPEN' && 'Acceso a contenido abierto'}
+                  {feature === 'FREE' && 'Acceso a contenido gratuito'}
+                  {feature === 'PREMIUM' && 'Acceso a contenido premium'}
+                </span>
               </li>
             ))}
           </ul>
         </div>
+      </CardContent>
 
+      <CardFooter className="flex flex-col gap-3 px-6 pb-6">
         {/* Botón de acción */}
-        <button
+        <Button
           onClick={() => !isCurrentPlan && !isLoading && onSelect(plan)}
           disabled={isCurrentPlan || isLoading}
+          variant={isCurrentPlan ? 'secondary' : isRecommended ? 'default' : isFree ? 'outline' : 'default'}
+          size="lg"
           className={`
-            w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center
+            w-full font-medium
             ${isCurrentPlan
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 cursor-default border border-green-300 dark:border-green-700'
-              : isRecommended
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg'
-              : isFree
-              ? 'bg-gray-600 hover:bg-gray-700 text-white'
-              : 'bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900'
+              ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-950 dark:text-green-300 dark:hover:bg-green-900'
+              : ''
             }
-            ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}
           `}
         >
           {isLoading ? (
@@ -201,15 +205,15 @@ export function PricingCard({
           ) : (
             buttonText
           )}
-        </button>
+        </Button>
 
         {/* Información adicional */}
         {!isFree && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
+          <p className="text-xs text-muted-foreground text-center">
             Puedes cancelar en cualquier momento
           </p>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

@@ -4,6 +4,10 @@ import { useUser } from '@clerk/nextjs';
 import { useState, useCallback } from 'react';
 import DashboardSidebar from './dashboard-sidebar';
 import DashboardContent from './dashboard-content';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CustomDashboardProps {
   appearance?: {
@@ -58,9 +62,34 @@ export default function CustomDashboard({ appearance }: CustomDashboardProps) {
   // Mostrar loading mientras se carga la información del usuario
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Cargando perfil...</span>
+      <div className="w-full space-y-4">
+        {/* Mobile: Stack vertical de skeleton cards */}
+        <div className="flex flex-col space-y-4 lg:hidden">
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-[200px] w-full" />
+        </div>
+        
+        {/* Desktop: Grid layout skeleton */}
+        <div className="hidden lg:block">
+          <div className="grid lg:grid-cols-4 lg:gap-8">
+            <div className="lg:col-span-1 space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+            <div className="lg:col-span-3">
+              <Skeleton className="h-[300px] w-full" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -86,53 +115,64 @@ export default function CustomDashboard({ appearance }: CustomDashboardProps) {
     <div className="w-full">
       {/* Mostrar error global si existe */}
       {dashboardState.error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800">{dashboardState.error}</p>
-            </div>
-            <div className="ml-auto pl-3">
-              <button
-                type="button"
-                className="inline-flex text-red-400 hover:text-red-600"
-                onClick={() => handleError('')}
-              >
-                <span className="sr-only">Cerrar</span>
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{dashboardState.error}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 p-0 hover:bg-transparent"
+              onClick={() => handleError('')}
+            >
+              <X className="h-3 w-3" />
+              <span className="sr-only">Cerrar</span>
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
 
-      {/* Layout principal del dashboard */}
-      <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-        {/* Sidebar de navegación */}
-        <div className="lg:col-span-1">
+      {/* Layout principal del dashboard - Mobile First */}
+      <div className="w-full">
+        {/* Mobile: Stack vertical */}
+        <div className="flex flex-col space-y-6 lg:hidden">
           <DashboardSidebar
             activeSection={dashboardState.activeSection}
             onSectionChange={handleSectionChange}
-            className="mb-8 lg:mb-0"
+            className="w-full"
           />
-        </div>
-
-        {/* Contenido principal */}
-        <div className="lg:col-span-3">
           <DashboardContent
             activeSection={dashboardState.activeSection}
             user={user}
             isLoading={dashboardState.isLoading}
             onError={handleError}
             onLoading={handleLoading}
-            className=""
+            className="w-full"
           />
+        </div>
+
+        {/* Tablet & Desktop: Grid layout */}
+        <div className="hidden lg:grid lg:grid-cols-4 lg:gap-8">
+          {/* Sidebar de navegación */}
+          <div className="lg:col-span-1">
+            <DashboardSidebar
+              activeSection={dashboardState.activeSection}
+              onSectionChange={handleSectionChange}
+              className="sticky top-6"
+            />
+          </div>
+
+          {/* Contenido principal */}
+          <div className="lg:col-span-3">
+            <DashboardContent
+              activeSection={dashboardState.activeSection}
+              user={user}
+              isLoading={dashboardState.isLoading}
+              onError={handleError}
+              onLoading={handleLoading}
+              className=""
+            />
+          </div>
         </div>
       </div>
     </div>

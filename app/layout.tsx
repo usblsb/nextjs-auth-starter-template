@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 // import "../styles/pages-dashboard.css";
 import Script from "next/script";
@@ -53,6 +54,7 @@ export default function RootLayout({
 						disableTransitionOnChange={false}
 					>
 						{children}
+						<Toaster richColors closeButton />
 					</ThemeProvider>
 				</body>
 			</ClerkProvider>

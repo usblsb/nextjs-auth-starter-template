@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import ProfileSection from "./sections/profile-section";
 import SecuritySection from "./sections/security-section";
 import BillingSection from "@/app/components/dashboard/sections/billing-section";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type DashboardSection = "profile" | "security" | "billing" | "demo";
 
@@ -38,37 +39,53 @@ export default function DashboardContent({
 		}
 	};
 
-	return (
-		<div
-			className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}
-		>
-			{/* Header de la sección activa */}
-			<div className="px-6 py-4 border-b border-gray-200">
-				<h1 className="text-2xl font-semibold text-gray-900">
-					{activeSection === "profile"
-						? "Mi Perfil"
-						: activeSection === "security"
-						? "Configuración de Seguridad"
-						: "Facturación y Suscripción"}
-				</h1>
-				<p className="mt-1 text-sm text-gray-600">
-					{activeSection === "profile"
-						? "Gestiona tu información personal y preferencias de cuenta"
-						: activeSection === "security"
-						? "Administra tu contraseña y sesiones activas"
-						: "Gestiona tu suscripción, métodos de pago y acceso a contenido premium"}
-				</p>
-			</div>
+	const getSectionInfo = () => {
+		switch (activeSection) {
+			case "profile":
+				return {
+					title: "Mi Perfil",
+					description: "Gestiona tu información personal y preferencias de cuenta"
+				};
+			case "security":
+				return {
+					title: "Configuración de Seguridad",
+					description: "Administra tu contraseña y sesiones activas"
+				};
+			case "billing":
+				return {
+					title: "Facturación y Suscripción",
+					description: "Gestiona tu suscripción, métodos de pago y acceso a contenido premium"
+				};
+			default:
+				return { title: "", description: "" };
+		}
+	};
 
-			{/* Contenido de la sección */}
-			<div className="p-6">
+	const sectionInfo = getSectionInfo();
+
+	return (
+		<Card className={`w-full ${className}`}>
+			<CardHeader>
+				<CardTitle className="text-xl lg:text-2xl">{sectionInfo.title}</CardTitle>
+				<CardDescription className="text-sm">
+					{sectionInfo.description}
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
 				{isLoading ? (
-					<div className="flex items-center justify-center py-8">
-						<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-						<span className="ml-3 text-gray-600">Cargando...</span>
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-[250px]" />
+							<Skeleton className="h-4 w-[200px]" />
+						</div>
+						<div className="space-y-2">
+							<Skeleton className="h-10 w-full" />
+							<Skeleton className="h-10 w-full" />
+						</div>
+						<Skeleton className="h-[100px] w-full" />
 					</div>
 				) : (
-					<>
+					<div className="w-full">
 						{activeSection === "profile" && (
 							<ProfileSection
 								user={user}
@@ -92,9 +109,9 @@ export default function DashboardContent({
 								onLoading={handleLoading}
 							/>
 						)}
-					</>
+					</div>
 				)}
-			</div>
-		</div>
+			</CardContent>
+		</Card>
 	);
 }

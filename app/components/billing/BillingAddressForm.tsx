@@ -1,12 +1,19 @@
 /**
  * Componente para capturar dirección de facturación
  * Incluye validación de códigos postales españoles y cálculo de impuestos en tiempo real
+ * Refactorizado con shadcn/ui components y diseño mobile-first
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { isCanaryIslandsPostalCode } from '@/lib/services/taxService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info, Loader2 } from 'lucide-react';
 
 export interface BillingAddress {
   country: string;
@@ -155,156 +162,131 @@ export function BillingAddressForm({
   }, [address, initialData, onAddressChange, showTaxPreview, updateTaxPreview]);
 
   return (
-    <div className={className}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label htmlFor="line1" className="block text-sm font-medium text-gray-700 mb-1">
-              Dirección *
-            </label>
-            <input
-              type="text"
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-lg">Dirección de facturación</CardTitle>
+        <CardDescription>
+          Introduce tu dirección para calcular los impuestos correspondientes
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <Label htmlFor="line1">Dirección *</Label>
+            <Input
               id="line1"
               value={address.line1}
               onChange={(e) => handleInputChange('line1', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.line1 ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
               placeholder="Calle, número, piso..."
+              className={errors.line1 ? 'border-destructive' : ''}
             />
             {errors.line1 && (
-              <p className="text-red-600 text-xs mt-1">{errors.line1}</p>
+              <p className="text-destructive text-sm mt-1">{errors.line1}</p>
             )}
           </div>
 
-          <div className="md:col-span-2">
-            <label htmlFor="line2" className="block text-sm font-medium text-gray-700 mb-1">
-              Dirección 2 (opcional)
-            </label>
-            <input
-              type="text"
+          <div className="sm:col-span-2">
+            <Label htmlFor="line2">Dirección 2 (opcional)</Label>
+            <Input
               id="line2"
               value={address.line2}
               onChange={(e) => handleInputChange('line2', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Escalera, portal, etc."
             />
           </div>
 
           <div>
-            <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
-              Código Postal *
-            </label>
-            <input
-              type="text"
+            <Label htmlFor="postalCode">Código Postal *</Label>
+            <Input
               id="postalCode"
               value={address.postalCode}
               onChange={(e) => handleInputChange('postalCode', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.postalCode ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
               placeholder="28001"
               maxLength={5}
+              className={errors.postalCode ? 'border-destructive' : ''}
             />
             {errors.postalCode && (
-              <p className="text-red-600 text-xs mt-1">{errors.postalCode}</p>
+              <p className="text-destructive text-sm mt-1">{errors.postalCode}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-              Ciudad *
-            </label>
-            <input
-              type="text"
+            <Label htmlFor="city">Ciudad *</Label>
+            <Input
               id="city"
               value={address.city}
               onChange={(e) => handleInputChange('city', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.city ? 'border-red-300 bg-red-50' : 'border-gray-300'
-              }`}
               placeholder="Madrid"
+              className={errors.city ? 'border-destructive' : ''}
             />
             {errors.city && (
-              <p className="text-red-600 text-xs mt-1">{errors.city}</p>
+              <p className="text-destructive text-sm mt-1">{errors.city}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-              Provincia
-            </label>
-            <select
-              id="state"
-              value={address.state}
-              onChange={(e) => handleInputChange('state', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Seleccionar provincia</option>
-              {spanishProvinces.map(province => (
-                <option key={province} value={province}>
-                  {province}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="state">Provincia</Label>
+            <Select value={address.state} onValueChange={(value) => handleInputChange('state', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar provincia" />
+              </SelectTrigger>
+              <SelectContent>
+                {spanishProvinces.map(province => (
+                  <SelectItem key={province} value={province}>
+                    {province}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-              País *
-            </label>
-            <select
-              id="country"
-              value={address.country}
-              onChange={(e) => handleInputChange('country', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="ES">España</option>
-            </select>
+            <Label htmlFor="country">País *</Label>
+            <Select value={address.country} onValueChange={(value) => handleInputChange('country', value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ES">España</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Preview de impuestos */}
         {showTaxPreview && (
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3 flex-1">
-                <h3 className="text-sm font-medium text-blue-800">
-                  Información fiscal
-                </h3>
-                {loadingTax ? (
-                  <p className="text-sm text-blue-600 mt-1">
-                    Calculando impuestos...
+          <Alert className="mt-4" role="status" aria-live="polite">
+            <Info className="h-4 w-4" aria-hidden="true" />
+            <AlertDescription>
+              <div className="font-medium mb-1">Información fiscal</div>
+              {loadingTax ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                  <span aria-live="polite">Calculando impuestos...</span>
+                </div>
+              ) : taxPreview ? (
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>{taxPreview.description}</strong>
                   </p>
-                ) : taxPreview ? (
-                  <div className="text-sm text-blue-600 mt-1">
-                    <p>
-                      <strong>{taxPreview.description}</strong>
-                    </p>
-                    <p>
-                      Tipo impositivo: <strong>{(taxPreview.rate * 100).toFixed(0)}%</strong>
-                    </p>
-                    {taxPreview.isCanaryIslands && (
-                      <p className="text-orange-600 font-medium">
-                        📍 Código postal de Canarias detectado - Se aplicará IGIC
-                      </p>
-                    )}
-                  </div>
-                ) : address.postalCode && address.postalCode.length === 5 ? (
-                  <p className="text-sm text-blue-600 mt-1">
-                    Introduce un código postal válido para ver los impuestos aplicables
+                  <p>
+                    Tipo impositivo: <strong>{(taxPreview.rate * 100).toFixed(0)}%</strong>
                   </p>
-                ) : null}
-              </div>
-            </div>
-          </div>
+                  {taxPreview.isCanaryIslands && (
+                    <p className="text-orange-600 dark:text-orange-400 font-medium">
+                      <span aria-hidden="true">📍</span> Código postal de Canarias detectado - Se aplicará IGIC
+                    </p>
+                  )}
+                </div>
+              ) : address.postalCode && address.postalCode.length === 5 ? (
+                <p className="text-sm">
+                  Introduce un código postal válido para ver los impuestos aplicables
+                </p>
+              ) : null}
+            </AlertDescription>
+          </Alert>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

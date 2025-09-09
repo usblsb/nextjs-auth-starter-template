@@ -146,8 +146,8 @@ export function PricingPlans({
         </div>
       )}
 
-      {/* Grid de planes */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Grid de planes - Mobile First */}
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* Plan gratuito */}
         {freePlan && (
           <PricingCard
@@ -187,7 +187,7 @@ export function PricingPlans({
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
             ¿Necesitas ayuda?
           </h3>
-          <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 text-sm text-gray-600 dark:text-gray-400">
             <div>
               <div className="font-medium text-gray-900 dark:text-white mb-1">
                 💳 Métodos de Pago
