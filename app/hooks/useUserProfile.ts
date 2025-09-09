@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 interface UserProfileState {
@@ -20,17 +20,7 @@ export function useUserProfile() {
     syncedWithDatabase: false,
   });
 
-  useEffect(() => {
-    if (!isLoaded || !user) {
-      setState(prev => ({ ...prev, isLoading: false }));
-      return;
-    }
-
-    // Solo sincronizar perfil con BD si es necesario
-    syncProfileWithDatabase();
-  }, [isLoaded, user]);
-
-  const syncProfileWithDatabase = async () => {
+  const syncProfileWithDatabase = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -66,7 +56,17 @@ export function useUserProfile() {
       console.error('Error syncing profile with database:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!isLoaded || !user) {
+      setState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
+    // Solo sincronizar perfil con BD si es necesario
+    syncProfileWithDatabase();
+  }, [isLoaded, user, syncProfileWithDatabase]);
 
   return {
     user,

@@ -4,7 +4,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { StripeWrapper } from './StripeWrapper';
 import { PaymentElementBasic } from './PaymentElementBasic';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -26,11 +26,7 @@ export function PaymentElementWrapper({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    createPaymentIntent();
-  }, [amount, currency]);
-
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -65,7 +61,11 @@ export function PaymentElementWrapper({
     } finally {
       setLoading(false);
     }
-  };
+  }, [amount, currency, onError]);
+
+  useEffect(() => {
+    createPaymentIntent();
+  }, [createPaymentIntent]);
 
   if (loading) {
     return (

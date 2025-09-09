@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { isCanaryIslandsPostalCode } from '@/lib/services/taxService';
 
 export interface BillingAddress {
@@ -108,7 +108,7 @@ export function BillingAddressForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const updateTaxPreview = async (addr: BillingAddress) => {
+  const updateTaxPreview = useCallback(async (addr: BillingAddress) => {
     if (!addr.postalCode || addr.postalCode.length < 5) {
       setTaxPreview(null);
       return;
@@ -140,7 +140,7 @@ export function BillingAddressForm({
     } finally {
       setLoadingTax(false);
     }
-  };
+  }, [onTaxInfoChange]);
 
   useEffect(() => {
     // Validación inicial si hay datos
@@ -152,7 +152,7 @@ export function BillingAddressForm({
         updateTaxPreview(address);
       }
     }
-  }, []);
+  }, [address, initialData, onAddressChange, showTaxPreview, updateTaxPreview]);
 
   return (
     <div className={className}>

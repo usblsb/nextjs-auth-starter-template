@@ -232,7 +232,7 @@ export function useSubscriptionCache(cacheTtl: number = 300000): UseSubscription
       await baseHook.refresh();
       setLastFetch(now);
     }
-  }, [baseHook.refresh, lastFetch, cacheTtl]);
+  }, [baseHook, lastFetch, cacheTtl]);
 
   return {
     ...baseHook,

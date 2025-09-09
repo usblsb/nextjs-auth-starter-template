@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export const contenidoPagesFooter = (
 	<>
 		<h1>Condiciones de Venta y Uso</h1>
@@ -7,7 +9,7 @@ export const contenidoPagesFooter = (
 			Esta página describe los términos y condiciones que rigen el uso de
 			ciertos productos o servicios de Electronica School, incluidos
 			electronica.school y aplicaciones móviles, ofrecidos por Electronica
-			School y sus subsidiarias, ("nos" o "nosotros").
+			School y sus subsidiarias, (<em>nos</em> o <em>nosotros</em>).
 		</p>
 
 		<p>
@@ -32,12 +34,12 @@ export const contenidoPagesFooter = (
 
 		<p>
 			Al utilizar este Sitio Web o contratar un Servicio a través del mismo,
-			consiente quedar vinculado por estas "Condiciones" y por nuestras
-			"Políticas de protección de datos", por lo que si no está de acuerdo con
+			consiente quedar vinculado por estas <em>Condiciones</em> y por nuestras
+			<em>Políticas de protección de datos</em>, por lo que si no está de acuerdo con
 			las mismas, no debe usar este Sitio Web ni realizar compra o
 			contrataciones, EL PROPIETARIO DE LA WEB se reserva el derecho a modificar
-			las presentes "Condiciones", así como las "Políticas de protección de
-			datos".
+			las presentes <em>Condiciones</em>, así como las <em>Políticas de protección de
+			datos</em>.
 		</p>
 
 		<p>
@@ -68,9 +70,11 @@ export const contenidoPagesFooter = (
 
 		<div className="bg-gray-50 p-6 rounded-lg shadow-sm my-8 flex justify-center">
 			<figure>
-				<img
+				<Image
 					src="/images/images-pages-footer/titular.jpg"
 					alt="Información del titular"
+					width={500}
+					height={500}
 					className="max-w-full h-auto"
 				/>
 			</figure>
@@ -82,20 +86,20 @@ export const contenidoPagesFooter = (
 
 		<p>
 			El contrato se formalizará en&nbsp;<strong>español</strong>, idioma en el
-			que están disponibles las "Condiciones" y las "Políticas de protección de
-			datos" en nuestro Sitio Web.
+			que están disponibles las <em>Condiciones</em> y las <em>Políticas de protección de
+			datos</em> en nuestro Sitio Web.
 		</p>
 
 		<p>
 			Como Cliente, con carácter previo a la contratación y durante el proceso
-			de contratación, podrá acceder, archivar e imprimir estas "Condiciones"
-			para su consulta.{" "}
+			de contratación, podrá acceder, archivar e imprimir estas <em>Condiciones</em>
+			para su consulta.{}
 		</p>
 
 		<p>
 			El contrato se formalizará en&nbsp;<strong>español</strong>, idioma en el
-			que están disponibles las "Condiciones" y las "Políticas de protección de
-			datos" en nuestro Sitio Web.
+			que están disponibles las <em>Condiciones</em> y las <em>Políticas de protección de
+			datos</em> en nuestro Sitio Web.
 		</p>
 
 		<h2>4. USO DE NUESTRO SITIO WEB Y/O APLICACIÓN</h2>
@@ -115,7 +119,7 @@ export const contenidoPagesFooter = (
 		<ul>
 			<li>
 				Hacer uso del Sitio Web de acuerdo con lo establecido en las&nbsp;
-				<strong>"condiciones de acceso y utilización"</strong>
+				<strong><em>condiciones de acceso y utilización</em></strong>
 				&nbsp;recogidas en el&nbsp;<strong>Aviso Legal.</strong>
 			</li>
 			<li>
@@ -263,7 +267,7 @@ export const contenidoPagesFooter = (
 
 		<p>
 			Este Sitio Web puede ofrecer varios planes de pago o suscripciones para
-			que el Cliente contrate el que más se ajuste a sus necesidades.{" "}
+			que el Cliente contrate el que más se ajuste a sus necesidades.{}
 		</p>
 
 		<p>Los planes de pago se pueden pagar de forma mensual.</p>
@@ -329,9 +333,9 @@ export const contenidoPagesFooter = (
 		</p>
 
 		<p>
-			Además, si el Cliente es una{" "}
+			Además, si el Cliente es una{}
 			<strong>persona usuaria ya registrada</strong>, dispondrá de un detalle de
-			todos los pedidos realizados en el apartado{" "}
+			todos los pedidos realizados en el apartado{}
 			<strong>-Escritorio -Cuenta</strong>.
 		</p>
 
@@ -395,7 +399,7 @@ export const contenidoPagesFooter = (
 
 		<p>
 			La contratación o suscripción de un plan de pagose inicia en el momento en
-			el que el usuario acepta las "Condiciones", introduce los datos de la
+			el que el usuario acepta las <em>Condiciones</em>, introduce los datos de la
 			tarjeta y realiza un primer pago correcto.
 		</p>
 
@@ -424,7 +428,7 @@ export const contenidoPagesFooter = (
 
 		<p>
 			El Cliente recibirá su factura en formato digital y podrá descargarla
-			también desde el apartado "mi cuenta".
+			también desde el apartado <em>mi cuenta</em>.
 		</p>
 
 		<h2>7. POLÍTICA DE DEVOLUCIONES</h2>

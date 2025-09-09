@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { BillingAddressForm, type BillingAddress, type TaxPreview } from './BillingAddressForm';
 import type { BillingPlan } from '@/lib/stripe/types';
@@ -93,13 +93,7 @@ export function SubscriptionWizard({
     },
   };
 
-  useEffect(() => {
-    if (billingAddress && taxPreview && plan) {
-      calculatePricing();
-    }
-  }, [billingAddress, taxPreview, plan]);
-
-  const calculatePricing = () => {
+  const calculatePricing = useCallback(() => {
     if (!taxPreview) return;
 
     const basePrice = plan.price;
@@ -129,7 +123,13 @@ export function SubscriptionWizard({
     }
 
     setPriceCalculation(pricing);
-  };
+  }, [plan, taxPreview]);
+
+  useEffect(() => {
+    if (billingAddress && taxPreview && plan) {
+      calculatePricing();
+    }
+  }, [billingAddress, taxPreview, plan, calculatePricing]);
 
   const handleAddressChange = (address: BillingAddress, isValid: boolean) => {
     setBillingAddress(address);

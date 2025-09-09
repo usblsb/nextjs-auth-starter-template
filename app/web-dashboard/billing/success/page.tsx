@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,17 +30,7 @@ export default function BillingSuccessPage() {
 
   const sessionId = searchParams.get('session_id');
 
-  useEffect(() => {
-    if (!sessionId) {
-      setResult({ success: false, error: 'No session ID provided' });
-      setLoading(false);
-      return;
-    }
-
-    processCheckoutSuccess();
-  }, [sessionId]);
-
-  const processCheckoutSuccess = async () => {
+  const processCheckoutSuccess = useCallback(async () => {
     try {
       const response = await fetch('/api/stripe/checkout-success', {
         method: 'POST',
@@ -72,7 +62,17 @@ export default function BillingSuccessPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      setResult({ success: false, error: 'No session ID provided' });
+      setLoading(false);
+      return;
+    }
+
+    processCheckoutSuccess();
+  }, [sessionId, processCheckoutSuccess]);
 
   const handleContinue = () => {
     // Refresco la página para asegurar que se recargue el estado de suscripción

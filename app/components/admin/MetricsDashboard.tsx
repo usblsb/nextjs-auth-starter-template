@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 interface MetricsData {
@@ -80,11 +80,7 @@ export function MetricsDashboard({ className = '' }: MetricsDashboardProps) {
   const [includeCache, setIncludeCache] = useState(false);
   const [includeRateLimit, setIncludeRateLimit] = useState(false);
 
-  useEffect(() => {
-    fetchMetrics();
-  }, [timeRange, includeCache, includeRateLimit]);
-
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -115,7 +111,11 @@ export function MetricsDashboard({ className = '' }: MetricsDashboardProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange, includeCache, includeRateLimit]);
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-ES', {

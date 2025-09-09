@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { StripeWrapper } from '../stripe/StripeWrapper';
 import { SubscriptionFormComplete } from './SubscriptionFormComplete';
@@ -35,14 +35,7 @@ export function SubscriptionModal({
 
   const email = userEmail || user?.primaryEmailAddress?.emailAddress || '';
 
-  useEffect(() => {
-    if (isOpen && plan) {
-      createPaymentIntent();
-    }
-  }, [isOpen, plan]);
-
-
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = useCallback(async () => {
     if (!email) {
       setError('Email requerido');
       return;
@@ -83,7 +76,14 @@ export function SubscriptionModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, plan]);
+
+  useEffect(() => {
+    if (isOpen && plan) {
+      createPaymentIntent();
+    }
+  }, [isOpen, plan, createPaymentIntent]);
+
 
   const handleFormSuccess = () => {
     console.log('🎉 Formulario completado exitosamente');
