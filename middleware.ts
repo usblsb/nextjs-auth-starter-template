@@ -3,7 +3,19 @@ import { NextResponse } from "next/server";
 import { subscriptionMiddleware } from "@/lib/middleware/subscriptionMiddleware";
 
 // Definir las rutas que requieren autenticación básica de Clerk
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/sign-out(.*)"]);
+const isPublicRoute = createRouteMatcher([
+	"/sign-in(.*)", 
+	"/sign-up(.*)", 
+	"/sign-out(.*)",
+	"/",
+	"/web-politica-privacidad",
+	"/web-politica-cookies",
+	"/web-contactar",
+	"/web-aviso-legal",
+	"/web-preguntas-frecuentes",
+	"/web-requisitos-tecnicos",
+	"/web-condiciones-venta"
+]);
 
 // Definir las rutas de API interna que no requieren autenticación
 const isInternalApiRoute = createRouteMatcher(["/api/internal/(.*)"]);

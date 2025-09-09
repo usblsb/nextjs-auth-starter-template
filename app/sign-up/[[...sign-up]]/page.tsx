@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { SignUp } from "@clerk/nextjs";
-import Header from "../../_template/components/header";
+import Header from "../../components/layouts/header";
 import { Footer } from "../../_template/components/footer";
 
 export async function generateMetadata(): Promise<Metadata> {
