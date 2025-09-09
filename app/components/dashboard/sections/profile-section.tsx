@@ -334,7 +334,7 @@ export default function ProfileSection({
 						<p className="text-sm text-blue-800">
 							• El email proviene de tu cuenta y no se puede modificar.<br/>
 							• Los datos de facturación (nombre, dirección) provienen de Stripe.<br/>
-							• Para modificar tus datos de facturación, usa el botón &quot;Modificar Datos&quot; que te llevará al portal de cliente de Stripe.
+							• Para modificar tus datos de facturación, usa el botón "Modificar Datos" que te llevará al portal de cliente de Stripe.
 						</p>
 					</div>
 				</div>
