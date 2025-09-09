@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 // import "../styles/pages-dashboard.css";
 import Script from "next/script";
@@ -42,10 +43,17 @@ export default function RootLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+		<html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
 			<ClerkProvider localization={esES} appearance={clerkAppearanceObject}>
 				<body className={`min-h-screen flex flex-col antialiased`}>
-					{children}
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange={false}
+					>
+						{children}
+					</ThemeProvider>
 				</body>
 			</ClerkProvider>
 
