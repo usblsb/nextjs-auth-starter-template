@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { esES } from "@clerk/localizations";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 // import "../styles/pages-dashboard.css";
 import Script from "next/script";
@@ -55,6 +56,7 @@ export default function RootLayout({
 					>
 						{children}
 						<Toaster richColors closeButton />
+						<SpeedInsights />
 					</ThemeProvider>
 				</body>
 			</ClerkProvider>

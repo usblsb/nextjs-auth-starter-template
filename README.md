@@ -35,6 +35,7 @@
 - **Sistema de Templates** - Componentes reutilizables y modulares
 - **Documentación Completa** - Guías de desarrollo y despliegue
 - **Configuración Profesional** - Lista para producción con Vercel
+- **Speed Insights** - Métricas de rendimiento con Vercel Speed Insights
 
 ---
 
