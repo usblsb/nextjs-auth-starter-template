@@ -3,6 +3,7 @@
 ## 1. Conceptos Básicos
 
 **Prisma ORM** es un toolkit de base de datos que incluye:
+
 - **Prisma Client**: Cliente de base de datos auto-generado y type-safe
 - **Prisma Migrate**: Sistema de migraciones declarativo
 - **Prisma Studio**: GUI para visualizar y editar datos
@@ -10,6 +11,7 @@
 ## 2. Comandos Esenciales
 
 ### Comandos de Desarrollo
+
 ```bash
 # Generar cliente Prisma después de cambios en schema
 npx prisma generate
@@ -31,6 +33,7 @@ npx prisma migrate reset
 ```
 
 ### Scripts package.json Configurados
+
 ```bash
 pnpm db:generate  # Genera cliente
 pnpm db:push      # Sincroniza schema
@@ -42,6 +45,7 @@ pnpm db:reset     # Reset BD
 ## 3. Estructura del Schema
 
 ### Configuración Base
+
 ```prisma
 generator client {
   provider = "prisma-client-js"
@@ -58,14 +62,17 @@ datasource db {
 ## 4. Normas para Creación de Tablas
 
 ### Nomenclatura
+
 - **Modelos**: PascalCase (`User`, `BlogPost`)
 - **Campos**: camelCase (`firstName`, `createdAt`)
 - **Tablas BD**: OBLIGATORIO prefijo `user_` + snake_case (`user_profiles`, `user_posts`)
 
 ### ⚠️ ADVERTENCIA CRÍTICA - Prefijos de Tablas
+
 **NUNCA tocar tablas con prefijo `els_`** - Son del backend Python existente
 
 **SIEMPRE usar prefijo `user_`** para todas las tablas de esta aplicación:
+
 ```prisma
 model User {
   id    String @id @default(cuid())
@@ -80,22 +87,24 @@ model Post {
 ```
 
 ### Campos Obligatorios
+
 ```prisma
 model User {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Campos específicos del modelo
   email     String   @unique
   name      String?
-  
+
   // OBLIGATORIO: Mapear tabla con prefijo user_
   @@map("user_profiles")
 }
 ```
 
 ### Tipos de Datos Comunes
+
 - **ID**: `String @id @default(cuid())` o `Int @id @default(autoincrement())`
 - **Texto**: `String` (requerido) o `String?` (opcional)
 - **Números**: `Int`, `Float`, `Decimal`
@@ -106,11 +115,12 @@ model User {
 ## 5. Relaciones
 
 ### Uno a Muchos
+
 ```prisma
 model User {
   id    String @id @default(cuid())
   posts Post[]
-  
+
   @@map("user_profiles")
 }
 
@@ -118,24 +128,25 @@ model Post {
   id       String @id @default(cuid())
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
-  
+
   @@map("user_posts")
 }
 ```
 
 ### Muchos a Muchos
+
 ```prisma
 model Post {
   id         String     @id @default(cuid())
   categories Category[]
-  
+
   @@map("user_posts")
 }
 
 model Category {
   id    String @id @default(cuid())
   posts Post[]
-  
+
   @@map("user_categories")
 }
 ```
@@ -143,19 +154,22 @@ model Category {
 ## 6. Consideraciones Importantes
 
 ### Para Desarrollo
+
 - Usar `db push` para cambios rápidos en desarrollo
 - Usar `migrate dev` para cambios que van a producción
 - Siempre ejecutar `generate` después de cambios en schema
 
 ### Para Producción
+
 - Solo usar `migrate deploy`
 - Nunca usar `db push` en producción
 - Hacer backup antes de migraciones
 
 ### Conexión Neon.com
+
 - DATABASE_URL debe incluir `sslmode=require`
 - Formato: `postgresql://user:pass@host:port/db?sslmode=require`
-- Variables en .env: `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- Variables en .env: `DB_HOST`, `DB1_USER`, `DB1_PASSWORD`, `DB1_NAME`
 
 ## 7. Flujo de Trabajo Recomendado
 
@@ -180,15 +194,15 @@ model Category {
 
 ```typescript
 // lib/prisma.ts
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+	prisma: PrismaClient | undefined;
+};
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 ```
 
 Esta configuración evita múltiples instancias de Prisma Client en desarrollo.

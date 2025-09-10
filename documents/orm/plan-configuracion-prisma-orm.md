@@ -38,12 +38,12 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
 
 - Usar archivo `.env` que ya contiene las variables rellenadas
 - Usar las variables ya establecidas de conexión con Neon.com:
-  - `DB_HOST=""`
-  - `DB_PORT=""`
-  - `DB_NAME=""`
-  - `DB_USER=""`
-  - `DB_PASSWORD=""`
-  - `DATABASE_URL="Url completa con datos de acceso a la base de datos"`
+  - `DB1_HOST=""`
+  - `DB1_PORT=""`
+  - `DB1_NAME=""`
+  - `DB1_USER=""`
+  - `DB1_PASSWORD=""`
+  - `DB1_DATABASE_URL="Url completa con datos de acceso a la base de datos"`
 
 ### Paso 2.2: Configuración del schema.prisma
 
@@ -55,7 +55,7 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
   }
   ```
 - [ ] Configurar datasource db con provider "postgresql"
-- [ ] Configurar url desde env("DATABASE_URL")
+- [ ] Configurar url desde env("DB1_DATABASE_URL")
 - [ ] Establecer configuraciones de conexión SSL para Neon.com
 - [ ] **ADVERTENCIA**: Evitar configuraciones personalizadas de `output` que causan errores en Next.js 15
 
@@ -95,10 +95,10 @@ Configuración completa de Prisma ORM para conectarse a una base de datos Postgr
 
 ### 🔧 Configuraciones Específicas para Neon.com
 
-#### Connection String Format en .en DATABASE_URL ya construida
+#### Connection String Format en .en DB1_DATABASE_URL ya construida
 
 ```
-DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
+DB1_DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
 ```
 
 #### SSL Configuration

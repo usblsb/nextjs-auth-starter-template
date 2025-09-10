@@ -41,7 +41,7 @@ SENTRY_DSN=https://...
 NEXT_PUBLIC_CDN_URL=https://cdn.tu-dominio.com
 
 # Base de datos (si aplica)
-DATABASE_URL=postgresql://...
+DB1_DATABASE_URL=postgresql://...
 REDIS_URL=redis://...
 ```
 
@@ -50,16 +50,18 @@ REDIS_URL=redis://...
 #### Dashboard de Clerk
 
 1. **Crear Aplicación de Producción:**
+
    - Ir a [Clerk Dashboard](https://dashboard.clerk.com)
    - Crear nueva aplicación o cambiar a modo producción
    - Configurar dominio de producción
 
 2. **Configurar URLs Permitidas:**
+
    ```
    Allowed origins:
    - https://tu-dominio.com
    - https://www.tu-dominio.com
-   
+
    Redirect URLs:
    - https://tu-dominio.com/web-dashboard
    - https://tu-dominio.com/sign-in
@@ -77,24 +79,24 @@ REDIS_URL=redis://...
 ```typescript
 // clerk.config.ts
 export const clerkConfig = {
-  // Configuración de sesiones
-  sessionTokenTemplate: 'your_template_name',
-  
-  // Configuración de reverificación
-  reverificationConfig: {
-    level: 'strict', // 'strict' | 'moderate' | 'lax'
-    gracePeriodMs: 10 * 60 * 1000, // 10 minutos
-  },
-  
-  // Configuración de passwords
-  passwordConfig: {
-    minLength: 8,
-    requireUppercase: true,
-    requireLowercase: true,
-    requireNumbers: true,
-    requireSpecialChars: true,
-    disallowCompromisedPasswords: true
-  }
+	// Configuración de sesiones
+	sessionTokenTemplate: "your_template_name",
+
+	// Configuración de reverificación
+	reverificationConfig: {
+		level: "strict", // 'strict' | 'moderate' | 'lax'
+		gracePeriodMs: 10 * 60 * 1000, // 10 minutos
+	},
+
+	// Configuración de passwords
+	passwordConfig: {
+		minLength: 8,
+		requireUppercase: true,
+		requireLowercase: true,
+		requireNumbers: true,
+		requireSpecialChars: true,
+		disallowCompromisedPasswords: true,
+	},
 };
 ```
 
@@ -105,80 +107,81 @@ export const clerkConfig = {
 ```javascript
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Optimizaciones de producción
-  compress: true,
-  poweredByHeader: false,
-  generateEtags: false,
-  
-  // Configuración de imágenes
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'img.clerk.com'
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.clerk.dev'
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.gravatar.com'
-      }
-    ],
-    // Optimizaciones de imágenes
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60,
-    dangerouslyAllowSVG: false
-  },
-  
-  // Headers de seguridad
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' *.clerk.accounts.dev *.clerk.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: *.clerk.com *.clerk.dev *.gravatar.com; connect-src 'self' *.clerk.accounts.dev *.clerk.com;"
-          }
-        ]
-      }
-    ];
-  },
-  
-  // Configuración de webpack
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // Optimizaciones del lado del cliente
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false
-      };
-    }
-    
-    return config;
-  },
-  
-  // Configuración experimental
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['@clerk/nextjs']
-  }
+	// Optimizaciones de producción
+	compress: true,
+	poweredByHeader: false,
+	generateEtags: false,
+
+	// Configuración de imágenes
+	images: {
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: "img.clerk.com",
+			},
+			{
+				protocol: "https",
+				hostname: "images.clerk.dev",
+			},
+			{
+				protocol: "https",
+				hostname: "www.gravatar.com",
+			},
+		],
+		// Optimizaciones de imágenes
+		formats: ["image/webp", "image/avif"],
+		minimumCacheTTL: 60,
+		dangerouslyAllowSVG: false,
+	},
+
+	// Headers de seguridad
+	async headers() {
+		return [
+			{
+				source: "/(.*)",
+				headers: [
+					{
+						key: "X-Frame-Options",
+						value: "DENY",
+					},
+					{
+						key: "X-Content-Type-Options",
+						value: "nosniff",
+					},
+					{
+						key: "Referrer-Policy",
+						value: "strict-origin-when-cross-origin",
+					},
+					{
+						key: "Content-Security-Policy",
+						value:
+							"default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' *.clerk.accounts.dev *.clerk.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: *.clerk.com *.clerk.dev *.gravatar.com; connect-src 'self' *.clerk.accounts.dev *.clerk.com;",
+					},
+				],
+			},
+		];
+	},
+
+	// Configuración de webpack
+	webpack: (config, { isServer }) => {
+		if (!isServer) {
+			// Optimizaciones del lado del cliente
+			config.resolve.fallback = {
+				...config.resolve.fallback,
+				fs: false,
+				net: false,
+				tls: false,
+			};
+		}
+
+		return config;
+	},
+
+	// Configuración experimental
+	experimental: {
+		optimizeCss: true,
+		optimizePackageImports: ["@clerk/nextjs"],
+	},
 };
 
 module.exports = nextConfig;
@@ -215,34 +218,34 @@ vercel env add NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 
 ```json
 {
-  "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
-  "installCommand": "pnpm install",
-  "framework": "nextjs",
-  "regions": ["iad1"],
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  },
-  "headers": [
-    {
-      "source": "/web-dashboard/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "private, no-cache, no-store, must-revalidate"
-        }
-      ]
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/dashboard",
-      "destination": "/web-dashboard",
-      "permanent": true
-    }
-  ]
+	"buildCommand": "pnpm build",
+	"devCommand": "pnpm dev",
+	"installCommand": "pnpm install",
+	"framework": "nextjs",
+	"regions": ["iad1"],
+	"functions": {
+		"app/api/**/*.ts": {
+			"maxDuration": 30
+		}
+	},
+	"headers": [
+		{
+			"source": "/web-dashboard/(.*)",
+			"headers": [
+				{
+					"key": "Cache-Control",
+					"value": "private, no-cache, no-store, must-revalidate"
+				}
+			]
+		}
+	],
+	"redirects": [
+		{
+			"source": "/dashboard",
+			"destination": "/web-dashboard",
+			"permanent": true
+		}
+	]
 }
 ```
 
@@ -250,16 +253,16 @@ vercel env add NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 
 ```json
 {
-  "scripts": {
-    "build": "next build",
-    "start": "next start",
-    "deploy": "vercel --prod",
-    "deploy:preview": "vercel",
-    "env:pull": "vercel env pull .env.local",
-    "type-check": "tsc --noEmit",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix"
-  }
+	"scripts": {
+		"build": "next build",
+		"start": "next start",
+		"deploy": "vercel --prod",
+		"deploy:preview": "vercel",
+		"env:pull": "vercel env pull .env.local",
+		"type-check": "tsc --noEmit",
+		"lint": "next lint",
+		"lint:fix": "next lint --fix"
+	}
 }
 ```
 
@@ -323,7 +326,7 @@ frontend:
   artifacts:
     baseDirectory: .next
     files:
-      - '**/*'
+      - "**/*"
   cache:
     paths:
       - node_modules/**/*
@@ -402,7 +405,7 @@ CMD ["node", "server.js"]
 ### 2. docker-compose.yml
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   dashboard:
@@ -507,30 +510,30 @@ http {
 
 ```typescript
 // sentry.client.config.ts
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tracesSampleRate: 1.0,
-  debug: false,
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: ['localhost', /^https:\/\/tu-dominio\.com/],
-    }),
-  ],
+	dsn: process.env.SENTRY_DSN,
+	environment: process.env.NODE_ENV,
+	tracesSampleRate: 1.0,
+	debug: false,
+	integrations: [
+		new Sentry.BrowserTracing({
+			tracePropagationTargets: ["localhost", /^https:\/\/tu-dominio\.com/],
+		}),
+	],
 });
 ```
 
 ```typescript
 // sentry.server.config.ts
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  tracesSampleRate: 1.0,
-  debug: false,
+	dsn: process.env.SENTRY_DSN,
+	environment: process.env.NODE_ENV,
+	tracesSampleRate: 1.0,
+	debug: false,
 });
 ```
 
@@ -538,31 +541,31 @@ Sentry.init({
 
 ```typescript
 // app/api/health/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    // Verificar conexiones críticas
-    const checks = {
-      timestamp: new Date().toISOString(),
-      status: 'healthy',
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV,
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-    };
+	try {
+		// Verificar conexiones críticas
+		const checks = {
+			timestamp: new Date().toISOString(),
+			status: "healthy",
+			version: process.env.npm_package_version || "1.0.0",
+			environment: process.env.NODE_ENV,
+			uptime: process.uptime(),
+			memory: process.memoryUsage(),
+		};
 
-    return NextResponse.json(checks, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 }
-    );
-  }
+		return NextResponse.json(checks, { status: 200 });
+	} catch (error) {
+		return NextResponse.json(
+			{
+				status: "unhealthy",
+				error: error.message,
+				timestamp: new Date().toISOString(),
+			},
+			{ status: 500 }
+		);
+	}
 }
 ```
 
@@ -570,17 +573,17 @@ export async function GET() {
 
 ```typescript
 // lib/analytics.ts
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <Analytics />
-      <SpeedInsights />
-    </>
-  );
+	return (
+		<>
+			{children}
+			<Analytics />
+			<SpeedInsights />
+		</>
+	);
 }
 ```
 
@@ -590,22 +593,31 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
 ```typescript
 // middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Configurar CORS para APIs
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    const response = NextResponse.next();
-    
-    response.headers.set('Access-Control-Allow-Origin', 'https://tu-dominio.com');
-    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    return response;
-  }
-  
-  return NextResponse.next();
+	// Configurar CORS para APIs
+	if (request.nextUrl.pathname.startsWith("/api/")) {
+		const response = NextResponse.next();
+
+		response.headers.set(
+			"Access-Control-Allow-Origin",
+			"https://tu-dominio.com"
+		);
+		response.headers.set(
+			"Access-Control-Allow-Methods",
+			"GET, POST, PUT, DELETE, OPTIONS"
+		);
+		response.headers.set(
+			"Access-Control-Allow-Headers",
+			"Content-Type, Authorization"
+		);
+
+		return response;
+	}
+
+	return NextResponse.next();
 }
 ```
 
@@ -613,26 +625,26 @@ export function middleware(request: NextRequest) {
 
 ```typescript
 // lib/rate-limit.ts
-import { NextRequest } from 'next/server';
+import { NextRequest } from "next/server";
 
 const rateLimitMap = new Map();
 
 export function rateLimit(request: NextRequest, limit = 10, window = 60000) {
-  const ip = request.ip || 'anonymous';
-  const now = Date.now();
-  const windowStart = now - window;
-  
-  const requests = rateLimitMap.get(ip) || [];
-  const recentRequests = requests.filter((time: number) => time > windowStart);
-  
-  if (recentRequests.length >= limit) {
-    return false;
-  }
-  
-  recentRequests.push(now);
-  rateLimitMap.set(ip, recentRequests);
-  
-  return true;
+	const ip = request.ip || "anonymous";
+	const now = Date.now();
+	const windowStart = now - window;
+
+	const requests = rateLimitMap.get(ip) || [];
+	const recentRequests = requests.filter((time: number) => time > windowStart);
+
+	if (recentRequests.length >= limit) {
+		return false;
+	}
+
+	recentRequests.push(now);
+	rateLimitMap.set(ip, recentRequests);
+
+	return true;
 }
 ```
 
@@ -640,22 +652,24 @@ export function rateLimit(request: NextRequest, limit = 10, window = 60000) {
 
 ```typescript
 // lib/validation.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const userUpdateSchema = z.object({
-  firstName: z.string().min(1).max(50),
-  lastName: z.string().min(1).max(50),
-  username: z.string().min(3).max(20).optional(),
+	firstName: z.string().min(1).max(50),
+	lastName: z.string().min(1).max(50),
+	username: z.string().min(3).max(20).optional(),
 });
 
-export const passwordChangeSchema = z.object({
-  currentPassword: z.string().min(1),
-  newPassword: z.string().min(8).max(100),
-  confirmPassword: z.string().min(8).max(100),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"],
-});
+export const passwordChangeSchema = z
+	.object({
+		currentPassword: z.string().min(1),
+		newPassword: z.string().min(8).max(100),
+		confirmPassword: z.string().min(8).max(100),
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		message: "Las contraseñas no coinciden",
+		path: ["confirmPassword"],
+	});
 ```
 
 ## Optimización de Performance
@@ -665,28 +679,28 @@ export const passwordChangeSchema = z.object({
 ```typescript
 // next.config.js
 module.exports = {
-  async headers() {
-    return [
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/images/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
-        ],
-      },
-    ];
-  },
+	async headers() {
+		return [
+			{
+				source: "/_next/static/(.*)",
+				headers: [
+					{
+						key: "Cache-Control",
+						value: "public, max-age=31536000, immutable",
+					},
+				],
+			},
+			{
+				source: "/images/(.*)",
+				headers: [
+					{
+						key: "Cache-Control",
+						value: "public, max-age=86400",
+					},
+				],
+			},
+		];
+	},
 };
 ```
 
@@ -694,22 +708,22 @@ module.exports = {
 
 ```json
 {
-  "scripts": {
-    "analyze": "ANALYZE=true next build",
-    "analyze:server": "BUNDLE_ANALYZE=server next build",
-    "analyze:browser": "BUNDLE_ANALYZE=browser next build"
-  }
+	"scripts": {
+		"analyze": "ANALYZE=true next build",
+		"analyze:server": "BUNDLE_ANALYZE=server next build",
+		"analyze:browser": "BUNDLE_ANALYZE=browser next build"
+	}
 }
 ```
 
 ```javascript
 // next.config.js
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+	enabled: process.env.ANALYZE === "true",
 });
 
 module.exports = withBundleAnalyzer({
-  // ... resto de la configuración
+	// ... resto de la configuración
 });
 ```
 
@@ -824,10 +838,11 @@ echo $CLERK_SECRET_KEY
 
 ```typescript
 // Verificar configuración
-console.log('Clerk Config:', {
-  publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.substring(0, 10) + '...',
-  signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
-  afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
+console.log("Clerk Config:", {
+	publishableKey:
+		process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.substring(0, 10) + "...",
+	signInUrl: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
+	afterSignInUrl: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
 });
 ```
 
@@ -855,7 +870,8 @@ Esta guía proporciona una base sólida para desplegar el dashboard personalizad
 5. **Revisar logs** de seguridad
 
 Para más información, consulta:
+
 - [Documentación de Next.js](https://nextjs.org/docs)
 - [Documentación de Clerk](https://clerk.com/docs)
-- [README del Dashboard](../app/(pages-dashboard)/README.md)
+- [README del Dashboard](<../app/(pages-dashboard)/README.md>)
 - [Documentación de Componentes](./dashboard-components.md)

@@ -24,7 +24,7 @@ import { PrismaClient } from "@prisma/client";
 
 // Conexión a base de datos de contenido (solo lectura)
 export const contentDb = new Pool({
-	connectionString: process.env.CONTENT_DATABASE_URL,
+	connectionString: process.env.DATABASE_URL_DB2=,
 });
 
 // Prisma para usuarios
@@ -121,8 +121,8 @@ export default function LessonContent({ courseId }) {
 
 ```env
 # .env.local
-CONTENT_DATABASE_URL="postgresql://user:pass@localhost:5432/content_db"
-DATABASE_URL="postgresql://user:pass@localhost:5432/users_db"
+DATABASE_URL_DB2="postgresql://user:pass@localhost:5432/content_db"
+DB1_DATABASE_URL="postgresql://user:pass@localhost:5432/users_db"
 ```
 
 ### 5. Schema de Prisma (solo tablas user\_\*)

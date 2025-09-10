@@ -6,12 +6,12 @@ Necesito configurar Prisma ORM para conectarme a una base de datos PostgreSQL en
 
 - Base de datos: Neon.com PostgreSQL 17
 - Nombres de las Variables de entorno disponibles en .env:
-  DB_HOST=""
-  DB_PORT=""
-  DB_NAME=""
-  DB_USER=""
-  DB_PASSWORD=""
-  DATABASE_URL=" Url completa con datos de acceso a la base de datos "
+  DB1_HOST=""
+  DB1_PORT=""
+  DB1_NAME=""
+  DB1_USER=""
+  DB1_PASSWORD=""
+  DB1_DATABASE_URL=" Url completa con datos de acceso a la base de datos "
 
 ## Especificaciones del esquema:
 
@@ -78,7 +78,7 @@ Necesito configurar Prisma ORM para conectarme a una base de datos PostgreSQL en
 Por favor genera:
 
 1. El archivo schema.prisma completo con comentarios en cada tabla y columna
-2. La configuración de DATABASE_URL usando las variables de entorno
+2. La configuración de DB1_DATABASE_URL usando las variables de entorno
 3. Los comandos SQL COMMENT para añadir comentarios a tablas y columnas después de la migración
 4. Los comandos necesarios para inicializar y migrar
 5. Ejemplo básico de uso para crear/consultar registros

@@ -30,13 +30,13 @@ En el fichero .env tenemos las siguientes variables de entorno con sus datos rel
 
 # DATOS DE CONEXION POSTGRESQL - NEON.COM Frankfurt [DB1]
 
-DB_HOST=""
-DB_PORT=""
-DB_NAME=""
-DB_USER=""
-DB_PASSWORD=""
+DB1_HOST=""
+DB1_PORT=""
+DB1_NAME=""
+DB1_USER=""
+DB1_PASSWORD=""
 
-# DATABASE_URL para Neon.com PostgreSQL con SSL
+# DB1_DATABASE_URL para Neon.com PostgreSQL con SSL
 
 DATABASE*URL="postgresql://neondb*"
 

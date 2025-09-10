@@ -90,7 +90,7 @@ Required environment variables (see `.env.example`):
 
 - `CLERK_SECRET_KEY` and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk authentication
 - `CLERK_WEBHOOK_SECRET` - For webhook signature validation
-- `DATABASE_URL` - PostgreSQL connection string
+- `DB1_DATABASE_URL` - PostgreSQL connection string
 - Database connection variables for Neon.com integration
 
 ## Development Guidelines

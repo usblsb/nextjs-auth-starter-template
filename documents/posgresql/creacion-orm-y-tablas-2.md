@@ -19,7 +19,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // Ver sección 2 (.env)
+  url      = env("DB1_DATABASE_URL") // Ver sección 2 (.env)
 }
 
 /// Catálogo interno de planes mapeados a Stripe (price/product)
@@ -255,7 +255,7 @@ pnpm add @prisma/client
 # 2) Inicializar Prisma apuntando a PostgreSQL
 npx prisma init --datasource-provider postgresql
 
-# 3) Ajusta .env con DB_* y DATABASE_URL (ver sección 2)
+# 3) Ajusta .env con DB_* y DB1_DATABASE_URL (ver sección 2)
 
 # 4) Crear y aplicar la migración inicial (tablas/índices)
 pnpm prisma migrate dev --name init_billing
