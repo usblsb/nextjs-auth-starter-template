@@ -77,34 +77,34 @@ export default function Header() {
                 <div className="flex flex-col space-y-2 pt-2">
                   {!user ? (
                     <>
-                      <Link href="/sign-up" onClick={closeSheet}>
-                        <Button variant="ghost" className="w-full justify-start">
-                          Registrarse
+                      <Link href="/sign-in" onClick={closeSheet}>
+                        <Button variant="secondary" className="w-full justify-start">
+                          Iniciar Sesión
                         </Button>
                       </Link>
-                      <Link href="/sign-in" onClick={closeSheet}>
-                        <Button className="w-full justify-start">
-                          Iniciar Sesión
+                      <Link href="/sign-up" onClick={closeSheet}>
+                        <Button variant="destructive" className="w-full justify-start">
+                          Registrarse
                         </Button>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <Link href="/web-dashboard" onClick={closeSheet}>
-                        <Button variant="ghost" className="w-full justify-start">
-                          Mi Cuenta
-                        </Button>
-                      </Link>
                       <Button 
                         onClick={() => {
                           handleSignOut();
                           closeSheet();
                         }} 
-                        variant="outline" 
+                        variant="secondary" 
                         className="w-full justify-start"
                       >
                         Cerrar Sesión
                       </Button>
+                      <Link href="/web-dashboard" onClick={closeSheet}>
+                        <Button variant="destructive" className="w-full justify-start">
+                          Mi Cuenta
+                        </Button>
+                      </Link>
                     </>
                   )}
                 </div>
@@ -116,11 +116,10 @@ export default function Header() {
         {/* Desktop Navigation */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="/"
-              className="hidden text-foreground/60 transition-colors hover:text-foreground md:block"
-            >
-              Inicio
+            <Link href="/">
+              <Button variant="secondary" size="sm" className="hidden md:inline-flex">
+                Inicio
+              </Button>
             </Link>
           </nav>
           
@@ -128,27 +127,27 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             {!user ? (
               <>
-                <Link href="/sign-up">
-                  <Button variant="ghost" size="sm">
-                    Registrarse
+                <Link href="/sign-in">
+                  <Button variant="secondary" size="sm">
+                    Iniciar Sesión
                   </Button>
                 </Link>
-                <Link href="/sign-in">
-                  <Button size="sm">
-                    Iniciar Sesión
+                <Link href="/sign-up">
+                  <Button variant="destructive" size="sm">
+                    Registrarse
                   </Button>
                 </Link>
               </>
             ) : (
               <>
+                <Button onClick={handleSignOut} variant="secondary" size="sm">
+                  Cerrar Sesión
+                </Button>
                 <Link href="/web-dashboard">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="destructive" size="sm">
                     Mi Cuenta
                   </Button>
                 </Link>
-                <Button onClick={handleSignOut} variant="outline" size="sm">
-                  Cerrar Sesión
-                </Button>
               </>
             )}
             <ThemeToggle />
