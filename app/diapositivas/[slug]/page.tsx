@@ -7,7 +7,7 @@ import Image from 'next/image'
 export default async function DiapositivaPage({ 
   params 
 }: { 
-  params: { slug: string } 
+  params: Promise<{ slug: string }>
 }) {
   // TODO: Temporal - acceso abierto para pruebas
   // const tipoUsuario = await userTypeService.getTipoUsuarioActual()
@@ -16,7 +16,8 @@ export default async function DiapositivaPage({
   // }
   const tipoUsuario = 'free' // Temporal para pruebas
 
-  const diapositiva = await contenidoService.getDiapositivaBySlug(params.slug, tipoUsuario)
+  const resolvedParams = await params
+  const diapositiva = await contenidoService.getDiapositivaBySlug(resolvedParams.slug, tipoUsuario)
   
   if (!diapositiva) {
     notFound()
@@ -55,10 +56,11 @@ export default async function DiapositivaPage({
 }
 
 // Meta tags dinámicos
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   // TODO: Temporal - acceso abierto para pruebas
   const tipoUsuario = 'free' // Temporal para pruebas
-  const diapositiva = await contenidoService.getDiapositivaBySlug(params.slug, tipoUsuario)
+  const resolvedParams = await params
+  const diapositiva = await contenidoService.getDiapositivaBySlug(resolvedParams.slug, tipoUsuario)
 
   if (!diapositiva) {
     return {

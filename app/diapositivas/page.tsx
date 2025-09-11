@@ -8,11 +8,11 @@ import { SearchAndFilters } from './components/SearchAndFilters'
 export default async function DiapositivasPage({ 
   searchParams 
 }: { 
-  searchParams: { 
+  searchParams: Promise<{ 
     page?: string
     q?: string
     orden?: string
-  } 
+  }>
 }) {
   // TODO: Temporal - acceso abierto para pruebas
   // const tipoUsuario = await userTypeService.getTipoUsuarioActual()
@@ -21,7 +21,8 @@ export default async function DiapositivasPage({
   // }
   const tipoUsuario = 'free' // Temporal para pruebas
 
-  const page = Number(searchParams.page) || 1
+  const params = await searchParams
+  const page = Number(params.page) || 1
   const limit = 12
 
   const diapositivasData = await contenidoService.getDiapositivasPaginadas(
@@ -29,8 +30,8 @@ export default async function DiapositivasPage({
     limit, 
     tipoUsuario,
     {
-      busqueda: searchParams.q,
-      ordenPor: (searchParams.orden as 'reciente' | 'antiguo' | 'titulo') || 'reciente'
+      busqueda: params.q,
+      ordenPor: (params.orden as 'reciente' | 'antiguo' | 'titulo') || 'reciente'
     }
   )
 
@@ -49,9 +50,9 @@ export default async function DiapositivasPage({
       {diapositivasData.total > 0 && (
         <div className="mb-6 text-sm text-muted-foreground">
           Mostrando {((page - 1) * limit) + 1} - {Math.min(page * limit, diapositivasData.total)} de {diapositivasData.total} diapositivas
-          {searchParams.q && (
+          {params.q && (
             <span className="ml-2">
-              para "{searchParams.q}"
+              para "{params.q}"
             </span>
           )}
         </div>
@@ -69,8 +70,8 @@ export default async function DiapositivasPage({
         hasNext={diapositivasData.hasNext}
         hasPrev={diapositivasData.hasPrev}
         searchParams={{
-          ...(searchParams.q && { q: searchParams.q }),
-          ...(searchParams.orden && searchParams.orden !== 'reciente' && { orden: searchParams.orden })
+          ...(params.q && { q: params.q }),
+          ...(params.orden && params.orden !== 'reciente' && { orden: params.orden })
         }}
       />
     </div>

@@ -16,6 +16,12 @@ class Diapositiva(models.Model):
         ACTIVO = 'activo', 'Activo'
         INACTIVO = 'inactivo', 'Inactivo'
         ARCHIVADO = 'archivado', 'Archivado'
+    
+    # Tipos de acceso a la diapositiva
+    class TipoAcceso(models.TextChoices):
+        OPEN = 'OPEN', 'Abierto'
+        FREE = 'FREE', 'Gratuito'
+        PREMIUM = 'PREMIUM', 'Premium'
 
     # Campos principales
     id = models.AutoField(primary_key=True, help_text="Identificador único de la diapositiva")
@@ -51,6 +57,16 @@ class Diapositiva(models.Model):
         blank=True, 
         null=True, 
         help_text="Estado de publicación de la diapositiva"
+    )
+    
+    # Tipo de acceso a la diapositiva
+    features = models.CharField(
+        max_length=50,
+        choices=TipoAcceso.choices,
+        default=TipoAcceso.OPEN,
+        blank=True,
+        null=True,
+        help_text="Tipo de acceso a la diapositiva: OPEN, FREE, PREMIUM"
     )
 
     # Campos específicos para IA

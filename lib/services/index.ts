@@ -6,5 +6,6 @@ export { userTypeService, UserTypeService } from './userTypeService'
 export type { 
   TipoUsuario, 
   CursoConLecciones, 
-  LeccionConDiapositivas 
+  LeccionConDiapositivas,
+  CursoDetallado
 } from './contenidoService'

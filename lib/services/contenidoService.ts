@@ -15,6 +15,12 @@ export interface LeccionConDiapositivas extends Leccion {
   })[]
 }
 
+export interface CursoDetallado extends Curso {
+  cursoLecciones: (CursoLeccion & {
+    leccion: Leccion
+  })[]
+}
+
 export class ContenidoService {
   
   /**
@@ -113,27 +119,6 @@ export class ContenidoService {
     })
   }
 
-  /**
-   * Obtiene un curso por su slug
-   */
-  async getCursoBySlug(slug: string, tipoUsuario: TipoUsuario): Promise<CursoConLecciones | null> {
-    const whereClause = this.buildWhereClause(tipoUsuario)
-    
-    return await db2.curso.findUnique({
-      where: { 
-        slug,
-        ...whereClause
-      },
-      include: {
-        cursoLecciones: {
-          orderBy: { indice: 'asc' },
-          include: {
-            leccion: true
-          }
-        }
-      }
-    }) as CursoConLecciones | null
-  }
 
   /**
    * Obtiene un curso por su ID
@@ -435,6 +420,243 @@ export class ContenidoService {
         return item.contenido || item.contenido_privado || item.contenido_publico || ''
       default:
         return item.contenido_publico || ''
+    }
+  }
+
+  // ===================== MÉTODOS PARA CURSOS =====================
+
+  /**
+   * Construye la cláusula WHERE para cursos según el tipo de usuario y features
+   */
+  private buildCursoWhereClause(tipoUsuario: TipoUsuario, features?: string) {
+    const baseClause = {
+      estado: 'activo'
+    }
+
+    // Si no se especifica features, mostrar según tipo de usuario
+    if (!features) {
+      return baseClause
+    }
+
+    return {
+      ...baseClause,
+      features
+    }
+  }
+
+  /**
+   * Determina qué contenido mostrar según usuario y features del curso
+   */
+  getContenidoCurso(curso: Curso, tipoUsuario: TipoUsuario): {
+    contenido: string
+    tieneAcceso: boolean
+    mensaje?: string
+  } {
+    const features = curso.features || 'OPEN'
+
+    // Usuario sin login (PÚBLICO)
+    if (tipoUsuario === 'publico') {
+      return {
+        contenido: curso.contenido_publico || '',
+        tieneAcceso: true,
+        mensaje: 'Regístrate para ver más'
+      }
+    }
+
+    // Usuario con login FREE (nunca ha pagado)
+    if (tipoUsuario === 'free') {
+      switch (features) {
+        case 'OPEN':
+        case 'FREE':
+          return {
+            contenido: curso.contenido_privado || '',
+            tieneAcceso: true
+          }
+        case 'PREMIUM':
+          return {
+            contenido: curso.contenido_publico || '',
+            tieneAcceso: false,
+            mensaje: 'Actualiza a Premium para ver más'
+          }
+        default:
+          return {
+            contenido: curso.contenido_publico || '',
+            tieneAcceso: false
+          }
+      }
+    }
+
+    // Usuario PREMIUM ACTIVO
+    if (tipoUsuario === 'premium') {
+      return {
+        contenido: curso.contenido_privado || '',
+        tieneAcceso: true
+      }
+    }
+
+    // Fallback
+    return {
+      contenido: curso.contenido_publico || '',
+      tieneAcceso: false
+    }
+  }
+
+  /**
+   * Obtiene cursos con paginación y filtros
+   */
+  async getCursosPaginados(
+    page: number = 1,
+    limit: number = 12,
+    tipoUsuario: TipoUsuario,
+    filtros: {
+      busqueda?: string
+      ordenPor?: 'reciente' | 'antiguo' | 'titulo'
+      features?: string
+    } = {}
+  ): Promise<{
+    data: Curso[]
+    total: number
+    totalPages: number
+    currentPage: number
+    hasNext: boolean
+    hasPrev: boolean
+  }> {
+    const offset = (page - 1) * limit
+
+    // Construir filtros WHERE
+    const whereClause: any = this.buildCursoWhereClause(tipoUsuario, filtros.features)
+
+    // Agregar búsqueda si existe
+    if (filtros.busqueda && filtros.busqueda.trim()) {
+      whereClause.OR = [
+        { titulo: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { descripcion_corta: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { contenido_publico: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { meta_description: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } }
+      ]
+    }
+
+    // Construir ordenamiento
+    let orderBy: any = [{ fecha_creacion: 'desc' }]
+    
+    switch (filtros.ordenPor) {
+      case 'antiguo':
+        orderBy = [{ fecha_creacion: 'asc' }]
+        break
+      case 'titulo':
+        orderBy = [{ titulo: 'asc' }]
+        break
+      case 'reciente':
+      default:
+        orderBy = [{ fecha_creacion: 'desc' }]
+        break
+    }
+
+    const [cursos, total] = await Promise.all([
+      db2.curso.findMany({
+        where: whereClause,
+        orderBy,
+        skip: offset,
+        take: limit
+      }),
+      db2.curso.count({
+        where: whereClause
+      })
+    ])
+
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      data: cursos,
+      total,
+      totalPages,
+      currentPage: page,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    }
+  }
+
+  /**
+   * Obtiene un curso por su slug
+   */
+  async getCursoBySlug(slug: string, tipoUsuario: TipoUsuario): Promise<Curso | null> {
+    const whereClause = this.buildCursoWhereClause(tipoUsuario)
+    
+    return await db2.curso.findUnique({
+      where: { 
+        slug,
+        ...whereClause
+      }
+    })
+  }
+
+  /**
+   * Obtiene un curso detallado con lecciones por su ID
+   */
+  async getCursoDetalladoById(id: number, tipoUsuario: TipoUsuario): Promise<CursoDetallado | null> {
+    const whereClause = this.buildCursoWhereClause(tipoUsuario)
+    
+    return await db2.curso.findUnique({
+      where: { 
+        id,
+        ...whereClause
+      },
+      include: {
+        cursoLecciones: {
+          orderBy: { indice: 'asc' },
+          include: {
+            leccion: true
+          }
+        }
+      }
+    }) as CursoDetallado | null
+  }
+
+  /**
+   * Busca cursos por término de búsqueda
+   */
+  async buscarCursos(termino: string, tipoUsuario: TipoUsuario): Promise<Curso[]> {
+    const whereClause = this.buildCursoWhereClause(tipoUsuario)
+
+    return await db2.curso.findMany({
+      where: {
+        ...whereClause,
+        OR: [
+          { titulo: { contains: termino, mode: 'insensitive' as const } },
+          { descripcion_corta: { contains: termino, mode: 'insensitive' as const } },
+          { contenido_publico: { contains: termino, mode: 'insensitive' as const } },
+          { meta_description: { contains: termino, mode: 'insensitive' as const } }
+        ]
+      },
+      take: 10,
+      orderBy: [{ fecha_creacion: 'desc' }]
+    })
+  }
+
+  /**
+   * Obtiene estadísticas de cursos
+   */
+  async getEstadisticasCursos(tipoUsuario: TipoUsuario): Promise<{
+    totalCursos: number
+    cursosPorFeatures: { features: string, count: number }[]
+  }> {
+    const whereClause = this.buildCursoWhereClause(tipoUsuario)
+
+    const [totalCursos, cursosPorFeatures] = await Promise.all([
+      db2.curso.count({ where: whereClause }),
+      db2.curso.groupBy({
+        by: ['features'],
+        where: whereClause,
+        _count: { id: true }
+      })
+    ])
+
+    return {
+      totalCursos,
+      cursosPorFeatures: cursosPorFeatures.map(item => ({
+        features: item.features || 'OPEN',
+        count: item._count.id
+      }))
     }
   }
 }
