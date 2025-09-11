@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useUser, useAuth } from "@clerk/nextjs";
 
@@ -12,6 +13,7 @@ import { ThemeToggle } from "@/app/components/theme-toggle";
 export default function Header() {
   const { user } = useUser();
   const { signOut } = useAuth();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleSignOut = () => {
@@ -20,6 +22,24 @@ export default function Header() {
 
   const closeSheet = () => {
     setIsOpen(false);
+  };
+
+  const isActiveRoute = (route: string) => {
+    return pathname === route;
+  };
+
+  const getMenuItemClass = (route: string, isDefault = false) => {
+    const isActive = isDefault || isActiveRoute(route);
+    return `
+      relative uppercase text-sm font-medium text-black dark:text-white
+      transition-colors duration-200 hover:text-[#1177cc]
+      before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc]
+      before:transition-all before:duration-300
+      ${isActive 
+        ? 'before:w-full text-[#1177cc]' 
+        : 'before:w-0 hover:before:w-full'
+      }
+    `;
   };
 
   return (
@@ -115,41 +135,36 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/">
-              <Button variant="secondary" size="sm" className="hidden md:inline-flex">
-                Inicio
-              </Button>
-            </Link>
-          </nav>
-          
-          {/* Desktop Auth Buttons and Theme Toggle */}
-          <div className="flex items-center space-x-2">
+          <nav className="flex items-center space-x-8 text-sm font-medium">
             {!user ? (
               <>
-                <Link href="/sign-in">
-                  <Button variant="secondary" size="sm">
-                    Iniciar Sesión
-                  </Button>
+                <Link href="/" className={getMenuItemClass('/')}>
+                  Inicio
                 </Link>
-                <Link href="/sign-up">
-                  <Button variant="destructive" size="sm">
-                    Registrarse
-                  </Button>
+                <Link href="/sign-in" className={getMenuItemClass('/sign-in')}>
+                  Iniciar Sesión
+                </Link>
+                <Link href="/sign-up" className={getMenuItemClass('/sign-up')}>
+                  Registrarse
                 </Link>
               </>
             ) : (
               <>
-                <Button onClick={handleSignOut} variant="secondary" size="sm">
+                <Link href="/" className={getMenuItemClass('/')}>
+                  Inicio
+                </Link>
+                <button onClick={handleSignOut} className={getMenuItemClass('/sign-out')}>
                   Cerrar Sesión
-                </Button>
-                <Link href="/web-dashboard">
-                  <Button variant="destructive" size="sm">
-                    Mi Cuenta
-                  </Button>
+                </button>
+                <Link href="/web-dashboard" className={getMenuItemClass('/web-dashboard')}>
+                  Mi Cuenta
                 </Link>
               </>
             )}
+          </nav>
+          
+          {/* Theme Toggle */}
+          <div className="flex items-center space-x-2">
             <ThemeToggle />
           </div>
         </div>
