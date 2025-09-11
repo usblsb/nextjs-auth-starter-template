@@ -1,0 +1,419 @@
+# rel_leccion_diapositiva/models.py
+
+from django.db import models
+from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
+
+
+class LeccionDiapositiva(models.Model):
+    """
+    Modelo que representa la relación many-to-many entre Lecciones y
+    Diapositivas  de
+    la plataforma de curso que usa la base de datos DB2..
+    Incluye el índice de ordenación de las diapositivas dentro de la lección.
+    Adaptado para PostgreSQL con máxima compatibilidad.
+    """
+
+    # Campos principales
+    id = models.AutoField(primary_key=True, help_text="Identificador único de la relación")
+    leccion_id = models.IntegerField(help_text="ID de la lección asociada")
+    diapositiva_id = models.IntegerField(help_text="ID de la diapositiva asociada")
+    indice = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Índice de ordenación de la diapositiva dentro de la lección"
+    )
+
+    class Meta:
+        db_table = 'els_rel_leccion_diapositiva'
+        verbose_name = "Lección-Diapositiva"
+        verbose_name_plural = "Relaciones Lección-Diapositiva"
+        ordering = ['leccion_id', 'indice']
+        indexes = [
+            models.Index(fields=['leccion_id']),
+            models.Index(fields=['diapositiva_id']),
+            models.Index(fields=['leccion_id', 'indice']),  # Para ordenamiento eficiente
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['leccion_id', 'diapositiva_id'], 
+                name='uq_leccion_diapositiva'
+            ),
+            models.UniqueConstraint(
+                fields=['leccion_id', 'indice'], 
+                name='uq_leccion_indice'
+            )
+        ]
+
+    def __str__(self):
+        return f"Lección {self.leccion_id} - Diapositiva {self.diapositiva_id} (Orden: {self.indice})"
+
+    def clean(self):
+        """
+        Validación personalizada para la relación.
+        """
+        # Validar que el índice sea único dentro de la lección
+        if self.leccion_id and self.indice is not None:
+            existing = LeccionDiapositiva.objects.filter(
+                leccion_id=self.leccion_id, 
+                indice=self.indice
+            ).exclude(pk=self.pk)
+            
+            if existing.exists():
+                raise ValidationError({
+                    'indice': f'Ya existe una diapositiva en el índice {self.indice} para esta lección'
+                })
+
+        # Validar que no se duplique la relación lección-diapositiva
+        if self.leccion_id and self.diapositiva_id:
+            existing = LeccionDiapositiva.objects.filter(
+                leccion_id=self.leccion_id, 
+                diapositiva_id=self.diapositiva_id
+            ).exclude(pk=self.pk)
+            
+            if existing.exists():
+                raise ValidationError({
+                    'diapositiva_id': 'Esta diapositiva ya está asociada a esta lección'
+                })
+
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe save para asignar índice automáticamente si no se proporciona.
+        """
+        if self.indice is None and self.leccion_id:
+            # Obtener el siguiente índice disponible
+            max_indice = LeccionDiapositiva.objects.filter(
+                leccion_id=self.leccion_id
+            ).aggregate(
+                max_indice=models.Max('indice')
+            )['max_indice']
+            
+            self.indice = (max_indice or -1) + 1
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def es_primera_diapositiva(self):
+        """
+        Indica si esta es la primera diapositiva de la lección.
+        """
+        return self.indice == 0
+
+    @property
+    def es_ultima_diapositiva(self):
+        """
+        Indica si esta es la última diapositiva de la lección.
+        """
+        if not self.leccion_id:
+            return False
+        
+        max_indice = LeccionDiapositiva.objects.filter(
+            leccion_id=self.leccion_id
+        ).aggregate(max_indice=models.Max('indice'))['max_indice']
+        
+        return self.indice == max_indice
+
+    def get_diapositiva_anterior(self):
+        """
+        Obtiene la diapositiva anterior en la misma lección.
+        """
+        if not self.leccion_id or self.indice <= 0:
+            return None
+        
+        try:
+            return LeccionDiapositiva.objects.get(
+                leccion_id=self.leccion_id,
+                indice=self.indice - 1
+            )
+        except LeccionDiapositiva.DoesNotExist:
+            return None
+
+    def get_diapositiva_siguiente(self):
+        """
+        Obtiene la diapositiva siguiente en la misma lección.
+        """
+        if not self.leccion_id:
+            return None
+        
+        try:
+            return LeccionDiapositiva.objects.get(
+                leccion_id=self.leccion_id,
+                indice=self.indice + 1
+            )
+        except LeccionDiapositiva.DoesNotExist:
+            return None
+
+    def mover_arriba(self):
+        """
+        Mueve la diapositiva una posición hacia arriba (índice menor).
+        """
+        if self.indice <= 0:
+            return False
+        
+        # Intercambiar índices con la diapositiva anterior
+        diapositiva_anterior = self.get_diapositiva_anterior()
+        if not diapositiva_anterior:
+            return False
+        
+        # Intercambio temporal para evitar violación de constraint único
+        temp_indice = -1
+        self.indice = temp_indice
+        self.save()
+        
+        diapositiva_anterior.indice = self.indice + 1
+        diapositiva_anterior.save()
+        
+        self.indice = diapositiva_anterior.indice - 1
+        self.save()
+        
+        return True
+
+    def mover_abajo(self):
+        """
+        Mueve la diapositiva una posición hacia abajo (índice mayor).
+        """
+        diapositiva_siguiente = self.get_diapositiva_siguiente()
+        if not diapositiva_siguiente:
+            return False
+        
+        # Intercambiar índices con la diapositiva siguiente
+        temp_indice = -1
+        self.indice = temp_indice
+        self.save()
+        
+        diapositiva_siguiente.indice = self.indice - 1
+        diapositiva_siguiente.save()
+        
+        self.indice = diapositiva_siguiente.indice + 1
+        self.save()
+        
+        return True
+
+    def mover_a_posicion(self, nueva_posicion):
+        """
+        Mueve la diapositiva a una posición específica, reordenando las demás.
+        """
+        if nueva_posicion < 0:
+            return False
+        
+        # Obtener todas las relaciones de la lección ordenadas
+        relaciones = list(LeccionDiapositiva.objects.filter(
+            leccion_id=self.leccion_id
+        ).order_by('indice'))
+        
+        if nueva_posicion >= len(relaciones):
+            nueva_posicion = len(relaciones) - 1
+        
+        # Encontrar la relación actual
+        relacion_actual_index = None
+        for i, rel in enumerate(relaciones):
+            if rel.id == self.id:
+                relacion_actual_index = i
+                break
+        
+        if relacion_actual_index is None:
+            return False
+        
+        # Mover la relación a la nueva posición
+        relacion = relaciones.pop(relacion_actual_index)
+        relaciones.insert(nueva_posicion, relacion)
+        
+        # Actualizar todos los índices
+        for i, rel in enumerate(relaciones):
+            rel.indice = i
+            rel.save()
+        
+        return True
+
+    def get_progreso_leccion(self):
+        """
+        Retorna el progreso de esta diapositiva dentro de la lección (0.0 - 1.0).
+        """
+        total_diapositivas = LeccionDiapositiva.objects.filter(
+            leccion_id=self.leccion_id
+        ).count()
+        
+        if total_diapositivas == 0:
+            return 1.0
+        
+        return (self.indice + 1) / total_diapositivas
+
+    @classmethod
+    def get_diapositivas_por_leccion(cls, leccion_id, ordenadas=True):
+        """
+        Obtiene todas las diapositivas de una lección.
+        """
+        queryset = cls.objects.filter(leccion_id=leccion_id)
+        
+        if ordenadas:
+            queryset = queryset.order_by('indice')
+        
+        return queryset
+
+    @classmethod
+    def get_numero_diapositivas(cls, leccion_id):
+        """
+        Obtiene el número total de diapositivas en una lección.
+        """
+        return cls.objects.filter(leccion_id=leccion_id).count()
+
+    @classmethod
+    def agregar_diapositiva_a_leccion(cls, leccion_id, diapositiva_id, indice=None):
+        """
+        Agrega una diapositiva a una lección en la posición especificada.
+        """
+        # Verificar que no exista ya la relación
+        if cls.objects.filter(leccion_id=leccion_id, diapositiva_id=diapositiva_id).exists():
+            raise ValidationError('Esta diapositiva ya está asociada a la lección')
+        
+        # Si no se especifica índice, agregar al final
+        if indice is None:
+            max_indice = cls.objects.filter(
+                leccion_id=leccion_id
+            ).aggregate(max_indice=models.Max('indice'))['max_indice']
+            indice = (max_indice or -1) + 1
+        else:
+            # Mover las diapositivas existentes para hacer espacio
+            cls.objects.filter(
+                leccion_id=leccion_id,
+                indice__gte=indice
+            ).update(indice=models.F('indice') + 1)
+        
+        # Crear la nueva relación
+        return cls.objects.create(
+            leccion_id=leccion_id,
+            diapositiva_id=diapositiva_id,
+            indice=indice
+        )
+
+    @classmethod
+    def remover_diapositiva_de_leccion(cls, leccion_id, diapositiva_id):
+        """
+        Remueve una diapositiva de una lección y reordena las restantes.
+        """
+        try:
+            relacion = cls.objects.get(leccion_id=leccion_id, diapositiva_id=diapositiva_id)
+            indice_removido = relacion.indice
+            relacion.delete()
+            
+            # Reordenar las diapositivas posteriores
+            cls.objects.filter(
+                leccion_id=leccion_id,
+                indice__gt=indice_removido
+            ).update(indice=models.F('indice') - 1)
+            
+            return True
+        except cls.DoesNotExist:
+            return False
+
+    @classmethod
+    def reordenar_leccion_completa(cls, leccion_id):
+        """
+        Reordena todas las diapositivas de una lección para eliminar gaps en los índices.
+        """
+        relaciones = cls.objects.filter(leccion_id=leccion_id).order_by('indice')
+        
+        for i, relacion in enumerate(relaciones):
+            if relacion.indice != i:
+                relacion.indice = i
+                relacion.save()
+
+    @classmethod
+    def duplicar_estructura_leccion(cls, leccion_origen_id, leccion_destino_id):
+        """
+        Duplica la estructura de diapositivas de una lección a otra.
+        """
+        # Limpiar diapositivas existentes de la lección destino
+        cls.objects.filter(leccion_id=leccion_destino_id).delete()
+        
+        # Copiar estructura de la lección origen
+        relaciones_origen = cls.objects.filter(leccion_id=leccion_origen_id).order_by('indice')
+        
+        nuevas_relaciones = []
+        for relacion in relaciones_origen:
+            nuevas_relaciones.append(cls(
+                leccion_id=leccion_destino_id,
+                diapositiva_id=relacion.diapositiva_id,
+                indice=relacion.indice
+            ))
+        
+        cls.objects.bulk_create(nuevas_relaciones)
+        return len(nuevas_relaciones)
+
+    @classmethod
+    def get_estadisticas_leccion(cls, leccion_id):
+        """
+        Obtiene estadísticas de una lección.
+        """
+        from django.db.models import Count, Avg
+        
+        stats = cls.objects.filter(leccion_id=leccion_id).aggregate(
+            total_diapositivas=Count('id'),
+            indice_promedio=Avg('indice')
+        )
+        
+        return {
+            'total_diapositivas': stats['total_diapositivas'] or 0,
+            'indice_promedio': stats['indice_promedio'] or 0,
+            'tiene_diapositivas': stats['total_diapositivas'] > 0
+        }
+
+    @classmethod
+    def buscar_diapositivas_en_lecciones(cls, leccion_ids, diapositiva_id=None):
+        """
+        Busca diapositivas específicas en múltiples lecciones.
+        """
+        queryset = cls.objects.filter(leccion_id__in=leccion_ids)
+        
+        if diapositiva_id:
+            queryset = queryset.filter(diapositiva_id=diapositiva_id)
+        
+        return queryset.order_by('leccion_id', 'indice')
+
+    @classmethod
+    def intercambiar_diapositivas(cls, leccion_id, indice1, indice2):
+        """
+        Intercambia las posiciones de dos diapositivas en una lección.
+        """
+        try:
+            diapositiva1 = cls.objects.get(leccion_id=leccion_id, indice=indice1)
+            diapositiva2 = cls.objects.get(leccion_id=leccion_id, indice=indice2)
+            
+            # Intercambio temporal para evitar violación de constraints
+            temp_indice = -1
+            diapositiva1.indice = temp_indice
+            diapositiva1.save()
+            
+            diapositiva2.indice = indice1
+            diapositiva2.save()
+            
+            diapositiva1.indice = indice2
+            diapositiva1.save()
+            
+            return True
+        except cls.DoesNotExist:
+            return False
+
+    @classmethod
+    def get_ruta_navegacion(cls, leccion_id, diapositiva_actual_id):
+        """
+        Obtiene información de navegación para una diapositiva específica.
+        """
+        try:
+            relacion_actual = cls.objects.get(
+                leccion_id=leccion_id, 
+                diapositiva_id=diapositiva_actual_id
+            )
+            
+            total = cls.get_numero_diapositivas(leccion_id)
+            
+            return {
+                'indice_actual': relacion_actual.indice,
+                'total_diapositivas': total,
+                'es_primera': relacion_actual.es_primera_diapositiva,
+                'es_ultima': relacion_actual.es_ultima_diapositiva,
+                'progreso': relacion_actual.get_progreso_leccion(),
+                'anterior': relacion_actual.get_diapositiva_anterior(),
+                'siguiente': relacion_actual.get_diapositiva_siguiente()
+            }
+        except cls.DoesNotExist:
+            return None

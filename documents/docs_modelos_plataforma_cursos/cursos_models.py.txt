@@ -1,0 +1,127 @@
+# cursos/models.py
+
+from django.db import models
+
+
+class Curso(models.Model):
+    """
+    Modelo que representa los cursos disponibles en la plataforma externa de los
+    cursos que usa base de datos DB2.
+    Adaptado para PostgreSQL con las mejores prácticas de Django.
+    """
+
+    # Estados posibles para el curso (usando TextChoices de Django 3.0+)
+    class EstadoCurso(models.TextChoices):
+        BORRADOR = 'borrador', 'Borrador'
+        ACTIVO = 'activo', 'Activo'
+        INACTIVO = 'inactivo', 'Inactivo'
+        ARCHIVADO = 'archivado', 'Archivado'
+
+    # Campos principales
+    id = models.AutoField(primary_key=True, help_text="Identificador único del curso")
+    titulo = models.CharField(max_length=255, help_text="Título principal del curso")
+    leccion = models.CharField(max_length=255, blank=True, null=True, help_text="Campo heredado, posiblemente obsoleto")
+
+    # Campos SEO
+    meta_titulo = models.CharField(max_length=500, blank=True, null=True, help_text="Título para SEO, aparece en la etiqueta <title>")
+    meta_description = models.CharField(max_length=500, blank=True, null=True, help_text="Descripción para SEO, aparece en los resultados de búsqueda")
+
+    # Descripciones
+    descripcion_corta = models.TextField(blank=True, null=True, help_text="Resumen o entradilla del curso")
+    descripcion_larga = models.TextField(blank=True, null=True, help_text="Descripción completa y detallada del curso")
+
+    # Fechas de control
+    fecha_creacion = models.DateTimeField(auto_now_add=True, help_text="Fecha de creación del registro")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, help_text="Fecha de la última actualización del registro")
+
+    # Contenidos
+    contenido = models.TextField(blank=True, null=True, help_text="Contenido principal del curso en formato HTML o texto")
+    contenido_privado = models.TextField(blank=True, null=True, help_text="Contenido visible solo para usuarios autenticados")
+    contenido_publico = models.TextField(blank=True, null=True, help_text="Contenido visible para todos los usuarios")
+
+    # Configuración de archivos y URLs
+    ruta_url_fotos = models.CharField(max_length=255, blank=True, null=True, help_text="Ruta a la carpeta de imágenes del curso")
+    slug = models.CharField(max_length=255, unique=True, blank=True, null=True, help_text="URL amigable para el curso")
+
+    # Estado y notas
+    estado = models.CharField(
+        max_length=20, 
+        choices=EstadoCurso.choices, 
+        default=EstadoCurso.BORRADOR,
+        blank=True, 
+        null=True, 
+        help_text="Estado de publicación del curso"
+    )
+    notas_privadas = models.TextField(blank=True, null=True, help_text="Anotaciones internas para administradores")
+
+    # Gestión de imágenes
+    imagen = models.CharField(max_length=255, blank=True, null=True, help_text="Nombre del archivo de la imagen principal del curso")
+    hash_imagen = models.CharField(max_length=64, blank=True, null=True, help_text="Hash SHA-256 del archivo de imagen para control de cambios")
+    
+    # Control de sincronización de imágenes
+    en_local = models.BooleanField(blank=True, null=True, help_text="Indica si la imagen está presente en el servidor local")
+    en_remoto = models.BooleanField(blank=True, null=True, help_text="Indica si la imagen ha sido subida al servidor remoto")
+    fecha_subida_remota = models.DateTimeField(blank=True, null=True, help_text="Fecha y hora de la última subida al servidor remoto")
+    url_remota = models.TextField(blank=True, null=True, help_text="URL completa de la imagen en el servidor remoto")
+
+    class Meta:
+        db_table = 'els_db_cursos'
+        verbose_name = "Curso"
+        verbose_name_plural = "Cursos"
+        ordering = ['-fecha_creacion']
+        indexes = [
+            models.Index(fields=['slug']),  # Índice para búsquedas por slug
+            models.Index(fields=['estado']),  # Índice para filtros por estado
+            models.Index(fields=['fecha_creacion']),  # Índice para ordenamiento
+        ]
+
+    def __str__(self):
+        return self.titulo
+
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe el método save para generar slug automáticamente si no existe.
+        """
+        if not self.slug and self.titulo:
+            from django.utils.text import slugify
+            self.slug = slugify(self.titulo)
+            
+            # Asegurar que el slug sea único
+            counter = 1
+            original_slug = self.slug
+            while Curso.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def esta_publicado(self):
+        """
+        Propiedad que indica si el curso está en estado activo.
+        """
+        return self.estado == self.EstadoCurso.ACTIVO
+
+    @property
+    def tiene_imagen(self):
+        """
+        Propiedad que indica si el curso tiene imagen asignada.
+        """
+        return bool(self.imagen)
+
+    def get_absolute_url(self):
+        """
+        Retorna la URL absoluta del curso usando el slug.
+        """
+        from django.urls import reverse
+        return reverse('curso_detalle', kwargs={'slug': self.slug})
+
+    def get_imagen_url(self):
+        """
+        Retorna la URL de la imagen, priorizando la URL remota si existe.
+        """
+        if self.url_remota:
+            return self.url_remota
+        elif self.imagen and self.ruta_url_fotos:
+            return f"{self.ruta_url_fotos.rstrip('/')}/{self.imagen}"
+        return None

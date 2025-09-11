@@ -1,0 +1,326 @@
+# rel_curso_leccion/models.py
+
+from django.db import models
+from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
+
+
+class CursoLeccion(models.Model):
+    """
+    Modelo que representa la relación many-to-many entre Cursos y Lecciones de
+    la plataforma de curso que usa la base de datos DB2.
+    Incluye el índice de ordenación de las lecciones dentro del curso.
+    Adaptado para PostgreSQL con máxima compatibilidad.
+    """
+
+    # Campos principales
+    id = models.AutoField(primary_key=True, help_text="Identificador único de la relación")
+    curso_id = models.IntegerField(help_text="ID del curso asociado")
+    leccion_id = models.IntegerField(help_text="ID de la lección asociada")
+    indice = models.IntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Índice de ordenación de la lección dentro del curso"
+    )
+
+    class Meta:
+        db_table = 'els_rel_curso_leccion'
+        verbose_name = "Curso-Lección"
+        verbose_name_plural = "Relaciones Curso-Lección"
+        ordering = ['curso_id', 'indice']
+        indexes = [
+            models.Index(fields=['curso_id']),
+            models.Index(fields=['leccion_id']),
+            models.Index(fields=['curso_id', 'indice']),  # Para ordenamiento eficiente
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['curso_id', 'leccion_id'], 
+                name='uq_curso_leccion'
+            ),
+            models.UniqueConstraint(
+                fields=['curso_id', 'indice'], 
+                name='uq_curso_indice'
+            )
+        ]
+
+    def __str__(self):
+        return f"Curso {self.curso_id} - Lección {self.leccion_id} (Orden: {self.indice})"
+
+    def clean(self):
+        """
+        Validación personalizada para la relación.
+        """
+        # Validar que el índice sea único dentro del curso
+        if self.curso_id and self.indice is not None:
+            existing = CursoLeccion.objects.filter(
+                curso_id=self.curso_id, 
+                indice=self.indice
+            ).exclude(pk=self.pk)
+            
+            if existing.exists():
+                raise ValidationError({
+                    'indice': f'Ya existe una lección en el índice {self.indice} para este curso'
+                })
+
+        # Validar que no se duplique la relación curso-lección
+        if self.curso_id and self.leccion_id:
+            existing = CursoLeccion.objects.filter(
+                curso_id=self.curso_id, 
+                leccion_id=self.leccion_id
+            ).exclude(pk=self.pk)
+            
+            if existing.exists():
+                raise ValidationError({
+                    'leccion_id': 'Esta lección ya está asociada a este curso'
+                })
+
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe save para asignar índice automáticamente si no se proporciona.
+        """
+        if self.indice is None and self.curso_id:
+            # Obtener el siguiente índice disponible
+            max_indice = CursoLeccion.objects.filter(
+                curso_id=self.curso_id
+            ).aggregate(
+                max_indice=models.Max('indice')
+            )['max_indice']
+            
+            self.indice = (max_indice or -1) + 1
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def es_primera_leccion(self):
+        """
+        Indica si esta es la primera lección del curso.
+        """
+        return self.indice == 0
+
+    @property
+    def es_ultima_leccion(self):
+        """
+        Indica si esta es la última lección del curso.
+        """
+        if not self.curso_id:
+            return False
+        
+        max_indice = CursoLeccion.objects.filter(
+            curso_id=self.curso_id
+        ).aggregate(max_indice=models.Max('indice'))['max_indice']
+        
+        return self.indice == max_indice
+
+    def get_leccion_anterior(self):
+        """
+        Obtiene la lección anterior en el mismo curso.
+        """
+        if not self.curso_id or self.indice <= 0:
+            return None
+        
+        try:
+            return CursoLeccion.objects.get(
+                curso_id=self.curso_id,
+                indice=self.indice - 1
+            )
+        except CursoLeccion.DoesNotExist:
+            return None
+
+    def get_leccion_siguiente(self):
+        """
+        Obtiene la lección siguiente en el mismo curso.
+        """
+        if not self.curso_id:
+            return None
+        
+        try:
+            return CursoLeccion.objects.get(
+                curso_id=self.curso_id,
+                indice=self.indice + 1
+            )
+        except CursoLeccion.DoesNotExist:
+            return None
+
+    def mover_arriba(self):
+        """
+        Mueve la lección una posición hacia arriba (índice menor).
+        """
+        if self.indice <= 0:
+            return False
+        
+        # Intercambiar índices con la lección anterior
+        leccion_anterior = self.get_leccion_anterior()
+        if not leccion_anterior:
+            return False
+        
+        # Intercambio temporal para evitar violación de constraint único
+        temp_indice = -1
+        self.indice = temp_indice
+        self.save()
+        
+        leccion_anterior.indice = self.indice + 1
+        leccion_anterior.save()
+        
+        self.indice = leccion_anterior.indice - 1
+        self.save()
+        
+        return True
+
+    def mover_abajo(self):
+        """
+        Mueve la lección una posición hacia abajo (índice mayor).
+        """
+        leccion_siguiente = self.get_leccion_siguiente()
+        if not leccion_siguiente:
+            return False
+        
+        # Intercambiar índices con la lección siguiente
+        temp_indice = -1
+        self.indice = temp_indice
+        self.save()
+        
+        leccion_siguiente.indice = self.indice - 1
+        leccion_siguiente.save()
+        
+        self.indice = leccion_siguiente.indice + 1
+        self.save()
+        
+        return True
+
+    def mover_a_posicion(self, nueva_posicion):
+        """
+        Mueve la lección a una posición específica, reordenando las demás.
+        """
+        if nueva_posicion < 0:
+            return False
+        
+        # Obtener todas las relaciones del curso ordenadas
+        relaciones = list(CursoLeccion.objects.filter(
+            curso_id=self.curso_id
+        ).order_by('indice'))
+        
+        if nueva_posicion >= len(relaciones):
+            nueva_posicion = len(relaciones) - 1
+        
+        # Encontrar la relación actual
+        relacion_actual_index = None
+        for i, rel in enumerate(relaciones):
+            if rel.id == self.id:
+                relacion_actual_index = i
+                break
+        
+        if relacion_actual_index is None:
+            return False
+        
+        # Mover la relación a la nueva posición
+        relacion = relaciones.pop(relacion_actual_index)
+        relaciones.insert(nueva_posicion, relacion)
+        
+        # Actualizar todos los índices
+        for i, rel in enumerate(relaciones):
+            rel.indice = i
+            rel.save()
+        
+        return True
+
+    @classmethod
+    def get_lecciones_por_curso(cls, curso_id, ordenadas=True):
+        """
+        Obtiene todas las lecciones de un curso.
+        """
+        queryset = cls.objects.filter(curso_id=curso_id)
+        
+        if ordenadas:
+            queryset = queryset.order_by('indice')
+        
+        return queryset
+
+    @classmethod
+    def get_numero_lecciones(cls, curso_id):
+        """
+        Obtiene el número total de lecciones en un curso.
+        """
+        return cls.objects.filter(curso_id=curso_id).count()
+
+    @classmethod
+    def agregar_leccion_al_curso(cls, curso_id, leccion_id, indice=None):
+        """
+        Agrega una lección a un curso en la posición especificada.
+        """
+        # Verificar que no exista ya la relación
+        if cls.objects.filter(curso_id=curso_id, leccion_id=leccion_id).exists():
+            raise ValidationError('Esta lección ya está asociada al curso')
+        
+        # Si no se especifica índice, agregar al final
+        if indice is None:
+            max_indice = cls.objects.filter(
+                curso_id=curso_id
+            ).aggregate(max_indice=models.Max('indice'))['max_indice']
+            indice = (max_indice or -1) + 1
+        else:
+            # Mover las lecciones existentes para hacer espacio
+            cls.objects.filter(
+                curso_id=curso_id,
+                indice__gte=indice
+            ).update(indice=models.F('indice') + 1)
+        
+        # Crear la nueva relación
+        return cls.objects.create(
+            curso_id=curso_id,
+            leccion_id=leccion_id,
+            indice=indice
+        )
+
+    @classmethod
+    def remover_leccion_del_curso(cls, curso_id, leccion_id):
+        """
+        Remueve una lección de un curso y reordena las restantes.
+        """
+        try:
+            relacion = cls.objects.get(curso_id=curso_id, leccion_id=leccion_id)
+            indice_removido = relacion.indice
+            relacion.delete()
+            
+            # Reordenar las lecciones posteriores
+            cls.objects.filter(
+                curso_id=curso_id,
+                indice__gt=indice_removido
+            ).update(indice=models.F('indice') - 1)
+            
+            return True
+        except cls.DoesNotExist:
+            return False
+
+    @classmethod
+    def reordenar_curso_completo(cls, curso_id):
+        """
+        Reordena todas las lecciones de un curso para eliminar gaps en los índices.
+        """
+        relaciones = cls.objects.filter(curso_id=curso_id).order_by('indice')
+        
+        for i, relacion in enumerate(relaciones):
+            if relacion.indice != i:
+                relacion.indice = i
+                relacion.save()
+
+    @classmethod
+    def duplicar_estructura_curso(cls, curso_origen_id, curso_destino_id):
+        """
+        Duplica la estructura de lecciones de un curso a otro.
+        """
+        # Limpiar lecciones existentes del curso destino
+        cls.objects.filter(curso_id=curso_destino_id).delete()
+        
+        # Copiar estructura del curso origen
+        relaciones_origen = cls.objects.filter(curso_id=curso_origen_id).order_by('indice')
+        
+        nuevas_relaciones = []
+        for relacion in relaciones_origen:
+            nuevas_relaciones.append(cls(
+                curso_id=curso_destino_id,
+                leccion_id=relacion.leccion_id,
+                indice=relacion.indice
+            ))
+        
+        cls.objects.bulk_create(nuevas_relaciones)
+        return len(nuevas_relaciones)

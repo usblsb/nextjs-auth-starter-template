@@ -1,0 +1,188 @@
+# diapositivas/models.py
+
+from django.db import models
+
+
+class Diapositiva(models.Model):
+    """
+    Modelo que representa las diapositivas multimedia en la plataforma externa de los
+    cursos que usa base de datos DB2.
+    Incluye soporte para IA, audio y video. Adaptado para PostgreSQL.
+    """
+
+    # Estados posibles para la diapositiva
+    class EstadoDiapositiva(models.TextChoices):
+        BORRADOR = 'borrador', 'Borrador'
+        ACTIVO = 'activo', 'Activo'
+        INACTIVO = 'inactivo', 'Inactivo'
+        ARCHIVADO = 'archivado', 'Archivado'
+
+    # Campos principales
+    id = models.AutoField(primary_key=True, help_text="Identificador único de la diapositiva")
+    titulo = models.CharField(max_length=255, help_text="Título principal de la diapositiva")
+    slug = models.CharField(max_length=255, unique=True, blank=True, null=True, help_text="URL amigable para la diapositiva")
+
+    # Contenido básico
+    contenido = models.TextField(blank=True, null=True, help_text="Contenido principal de la diapositiva en formato HTML o texto")
+
+    # Fechas de control
+    fecha_creacion = models.DateTimeField(auto_now_add=True, help_text="Fecha de creación del registro")
+    fecha_actualizacion = models.DateTimeField(auto_now=True, help_text="Fecha de la última actualización del registro")
+
+    # Gestión de imagen principal
+    imagen = models.CharField(max_length=255, blank=True, null=True, help_text="Nombre del archivo de la imagen de la diapositiva")
+    hash_imagen = models.CharField(max_length=64, blank=True, null=True, help_text="Hash SHA-256 del archivo de imagen para control de cambios")
+    
+    # Control de sincronización de imágenes
+    # Se permite en_local y en_remoto null
+    en_local = models.BooleanField(null=True, blank=True, help_text="Indica si la imagen está presente en el servidor local")
+    en_remoto = models.BooleanField(null=True, blank=True, help_text="Indica si la imagen ha sido subida al servidor remoto")    
+    fecha_subida_remota = models.DateTimeField(blank=True, null=True, help_text="Fecha y hora de la última subida al servidor remoto")
+    url_remota = models.CharField(max_length=255, blank=True, null=True, help_text="URL completa de la imagen en el servidor remoto")
+
+    # Campos SEO
+    meta_titulo = models.CharField(max_length=500, blank=True, null=True, help_text="Título para SEO, aparece en la etiqueta <title>")
+    meta_description = models.CharField(max_length=500, blank=True, null=True, help_text="Descripción para SEO, aparece en los resultados de búsqueda")
+
+    # Estado
+    estado = models.CharField(
+        max_length=20, 
+        choices=EstadoDiapositiva.choices, 
+        blank=True, 
+        null=True, 
+        help_text="Estado de publicación de la diapositiva"
+    )
+
+    # Campos específicos para IA
+    system_prompt_text_dp = models.TextField(blank=True, null=True, help_text="Prompt que define el comportamiento del sistema o la IA sobre esta Diapositiva")
+    user_prompt_text_dp = models.TextField(blank=True, null=True, help_text="Prompt que el usuario envía sobre esta Diapositiva")
+    text_to_audio_dp = models.TextField(blank=True, null=True, help_text="Texto a convertir en audio (≤5,000 caracteres)")
+    contenido_ai_text_dp = models.TextField(blank=True, null=True, help_text="Contenido mejorado y generado con la AI para la diapositiva")
+
+    # Gestión de archivos multimedia - Audio
+    ruta_url_audio_local_dp = models.CharField(max_length=1000, blank=True, null=True, help_text="Ruta al audio de la Diapositiva en local")
+    ruta_url_audio_remoto_dp = models.CharField(max_length=1000, blank=True, null=True, help_text="Ruta al audio de la Diapositiva en remoto")
+    fecha_actualizacion_audio_remoto_dp = models.DateTimeField(auto_now=True, help_text="Fecha de la última actualización del audio en remoto")
+
+    # Gestión de archivos multimedia - Video
+    ruta_url_video_local_dp = models.CharField(max_length=1000, blank=True, null=True, help_text="Ruta al video de la Diapositiva en local")
+    ruta_url_video_remoto_dp = models.CharField(max_length=1000, blank=True, null=True, help_text="Ruta al video de la Diapositiva en remoto")
+    fecha_actualizacion_video_remoto_dp = models.DateTimeField(auto_now=True, help_text="Fecha de la última actualización del video en remoto")
+
+    class Meta:
+        db_table = 'els_db_diapositivas'
+        verbose_name = "Diapositiva"
+        verbose_name_plural = "Diapositivas"
+        ordering = ['-fecha_creacion']
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['estado']),
+            models.Index(fields=['fecha_creacion']),
+            models.Index(fields=['titulo']),
+        ]
+
+    def __str__(self):
+        return self.titulo
+
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribe el método save para generar slug automáticamente si no existe.
+        """
+        if not self.slug and self.titulo:
+            from django.utils.text import slugify
+            self.slug = slugify(self.titulo)
+            
+            # Asegurar que el slug sea único
+            counter = 1
+            original_slug = self.slug
+            while Diapositiva.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def esta_publicada(self):
+        """
+        Propiedad que indica si la diapositiva está en estado activo.
+        """
+        return self.estado == self.EstadoDiapositiva.ACTIVO
+
+    @property
+    def tiene_imagen(self):
+        """
+        Propiedad que indica si la diapositiva tiene imagen asignada.
+        """
+        return bool(self.imagen)
+
+    @property
+    def tiene_audio(self):
+        """
+        Propiedad que indica si la diapositiva tiene audio disponible.
+        """
+        return bool(self.ruta_url_audio_local_dp or self.ruta_url_audio_remoto_dp)
+
+    @property
+    def tiene_video(self):
+        """
+        Propiedad que indica si la diapositiva tiene video disponible.
+        """
+        return bool(self.ruta_url_video_local_dp or self.ruta_url_video_remoto_dp)
+
+    @property
+    def tiene_contenido_ai(self):
+        """
+        Propiedad que indica si la diapositiva tiene contenido generado por IA.
+        """
+        return bool(self.contenido_ai_text_dp)
+
+    def get_absolute_url(self):
+        """
+        Retorna la URL absoluta de la diapositiva usando el slug.
+        """
+        from django.urls import reverse
+        return reverse('diapositiva_detalle', kwargs={'slug': self.slug})
+
+    def get_imagen_url(self):
+        """
+        Retorna la URL de la imagen, priorizando la URL remota si existe.
+        """
+        if self.url_remota:
+            return self.url_remota
+        elif self.imagen:
+            return f"/media/diapositivas/{self.imagen}"
+        return None
+
+    def get_audio_url(self):
+        """
+        Retorna la URL del audio, priorizando la versión remota si existe.
+        """
+        if self.ruta_url_audio_remoto_dp:
+            return self.ruta_url_audio_remoto_dp
+        elif self.ruta_url_audio_local_dp:
+            return self.ruta_url_audio_local_dp
+        return None
+
+    def get_video_url(self):
+        """
+        Retorna la URL del video, priorizando la versión remota si existe.
+        """
+        if self.ruta_url_video_remoto_dp:
+            return self.ruta_url_video_remoto_dp
+        elif self.ruta_url_video_local_dp:
+            return self.ruta_url_video_local_dp
+        return None
+
+    def es_multimedia_completa(self):
+        """
+        Verifica si la diapositiva tiene todos los elementos multimedia.
+        """
+        return self.tiene_imagen and self.tiene_audio and self.tiene_video
+
+    def get_contenido_final(self):
+        """
+        Retorna el contenido final, priorizando el generado por IA si existe.
+        """
+        if self.contenido_ai_text_dp:
+            return self.contenido_ai_text_dp
+        return self.contenido or ""
