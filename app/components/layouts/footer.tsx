@@ -7,42 +7,42 @@ export default function Footer() {
 				<nav className="flex flex-wrap justify-center items-center gap-4 md:gap-6 lg:gap-8 mb-4">
 					<Link
 						href="/web-politica-privacidad"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Política de privacidad
 					</Link>
 					<Link
 						href="/web-aviso-legal"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Aviso Legal
 					</Link>
 					<Link
 						href="/web-condiciones-venta"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Condiciones de Venta y Uso
 					</Link>
 					<Link
 						href="/web-politica-cookies"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Política de Cookies
 					</Link>
 					<Link
 						href="/web-preguntas-frecuentes"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Faq
 					</Link>
 					<Link
 						href="/web-requisitos-tecnicos"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Requisitos técnicos
@@ -50,14 +50,14 @@ export default function Footer() {
 					<span className="text-sm font-medium text-muted-foreground">Blog</span>
 					<Link
 						href="/web-contactar"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Contactar
 					</Link>
 					<Link
 						href="/#ajustar-cookies"
-						className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+						className="relative text-sm font-medium text-muted-foreground hover:text-foreground transition-colors before:absolute before:bottom-0 before:left-0 before:h-[2px] before:bg-[#1177cc] before:w-0 hover:before:w-full before:transition-all before:duration-300"
 						rel="noopener noreferrer nofollow"
 					>
 						Ajustar Cookies
