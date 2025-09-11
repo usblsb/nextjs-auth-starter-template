@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client-db2"
+}
+
+datasource db2 {
+  provider = "postgresql"
+  url      = env("DB2_DATABASE_URL")
+}
+
+model Curso {
+  id                   Int      @id @default(autoincrement())
+  titulo               String   @db2.VarChar(255)
+  leccion              String?  @db2.VarChar(255)
+  meta_titulo          String?  @db2.VarChar(500)
+  meta_description     String?  @db2.VarChar(500)
+  descripcion_corta    String?  @db2.Text
+  descripcion_larga    String?  @db2.Text
+  fecha_creacion       DateTime @default(now()) @db2.Timestamptz(6)
+  fecha_actualizacion  DateTime @updatedAt @db2.Timestamptz(6)
+  contenido            String?  @db2.Text
+  contenido_privado    String?  @db2.Text
+  contenido_publico    String?  @db2.Text
+  ruta_url_fotos       String?  @db2.VarChar(255)
+  slug                 String?  @unique @db2.VarChar(255)
+  estado               String?  @db2.VarChar(20)
+  notas_privadas       String?  @db2.Text
+  imagen               String?  @db2.VarChar(255)
+  hash_imagen          String?  @db2.VarChar(64)
+  en_local             Boolean?
+  en_remoto            Boolean?
+  fecha_subida_remota  DateTime? @db2.Timestamptz(6)
+  url_remota           String?  @db2.Text
+
+  // Relaciones
+  cursoLecciones CursoLeccion[]
+
+  @@map("els_db_cursos")
+}
+
+model Leccion {
+  id                   Int      @id @default(autoincrement())
+  titulo               String   @db2.VarChar(255)
+  leccion              String?  @db2.VarChar(255)
+  meta_titulo          String?  @db2.VarChar(500)
+  meta_description     String?  @db2.VarChar(500)
+  descripcion_corta    String?  @db2.Text
+  descripcion_larga    String?  @db2.Text
+  fecha_creacion       DateTime @default(now()) @db2.Timestamptz(6)
+  fecha_actualizacion  DateTime @updatedAt @db2.Timestamptz(6)
+  contenido            String?  @db2.Text
+  contenido_privado    String?  @db2.Text
+  contenido_publico    String?  @db2.Text
+  ruta_url_fotos       String?  @db2.VarChar(255)
+  slug                 String?  @unique @db2.VarChar(255)
+  estado               String   @default("borrador") @db2.VarChar(20)
+  notas_privadas       String?  @db2.Text
+  imagen               String?  @db2.VarChar(255)
+  hash_imagen          String?  @db2.VarChar(64)
+  en_local             Boolean?
+  en_remoto            Boolean?
+  fecha_subida_remota  DateTime? @db2.Timestamptz(6)
+  url_remota           String?  @db2.VarChar(255)
+
+  // Relaciones
+  cursoLecciones       CursoLeccion[]
+  leccionDiapositivas  LeccionDiapositiva[]
+
+  @@map("els_db_lecciones")
+}
+
+model Diapositiva {
+  id                                Int      @id @default(autoincrement())
+  titulo                            String   @db2.VarChar(255)
+  slug                              String?  @unique @db2.VarChar(255)
+  contenido                         String?  @db2.Text
+  fecha_creacion                    DateTime @default(now()) @db2.Timestamptz(6)
+  fecha_actualizacion               DateTime @updatedAt @db2.Timestamptz(6)
+  imagen                            String?  @db2.VarChar(255)
+  hash_imagen                       String?  @db2.VarChar(64)
+  en_local                          Boolean?
+  en_remoto                         Boolean?
+  fecha_subida_remota               DateTime? @db2.Timestamptz(6)
+  url_remota                        String?  @db2.VarChar(255)
+  meta_titulo                       String?  @db2.VarChar(500)
+  meta_description                  String?  @db2.VarChar(500)
+  estado                            String?  @db2.VarChar(20)
+  system_prompt_text_dp             String?  @db2.Text
+  user_prompt_text_dp               String?  @db2.Text
+  text_to_audio_dp                  String?  @db2.Text
+  contenido_ai_text_dp              String?  @db2.Text
+  ruta_url_audio_local_dp           String?  @db2.VarChar(1000)
+  ruta_url_audio_remoto_dp          String?  @db2.VarChar(1000)
+  fecha_actualizacion_audio_remoto_dp DateTime @updatedAt @db2.Timestamptz(6)
+  ruta_url_video_local_dp           String?  @db2.VarChar(1000)
+  ruta_url_video_remoto_dp          String?  @db2.VarChar(1000)
+  fecha_actualizacion_video_remoto_dp DateTime @updatedAt @db2.Timestamptz(6)
+
+  // Relaciones
+  leccionDiapositivas LeccionDiapositiva[]
+
+  @@map("els_db_diapositivas")
+}
+
+model CursoLeccion {
+  id         Int @id @default(autoincrement())
+  curso_id   Int
+  leccion_id Int
+  indice     Int
+
+  // Relaciones
+  curso   Curso   @relation(fields: [curso_id], references: [id], onDelete: Cascade)
+  leccion Leccion @relation(fields: [leccion_id], references: [id], onDelete: Cascade)
+
+  @@unique([curso_id, leccion_id], name: "uq_curso_leccion")
+  @@unique([curso_id, indice], name: "uq_curso_indice")
+  @@map("els_rel_curso_leccion")
+}
+
+model LeccionDiapositiva {
+  id             Int @id @default(autoincrement())
+  leccion_id     Int
+  diapositiva_id Int
+  indice         Int
+
+  // Relaciones
+  leccion      Leccion     @relation(fields: [leccion_id], references: [id], onDelete: Cascade)
+  diapositiva  Diapositiva @relation(fields: [diapositiva_id], references: [id], onDelete: Cascade)
+
+  @@unique([leccion_id, diapositiva_id], name: "uq_leccion_diapositiva")
+  @@unique([leccion_id, indice], name: "uq_leccion_indice")
+  @@map("els_rel_leccion_diapositiva")
+}

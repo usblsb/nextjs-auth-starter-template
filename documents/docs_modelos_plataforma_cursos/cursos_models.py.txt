@@ -16,6 +16,12 @@ class Curso(models.Model):
         ACTIVO = 'activo', 'Activo'
         INACTIVO = 'inactivo', 'Inactivo'
         ARCHIVADO = 'archivado', 'Archivado'
+    
+    # Tipos de acceso al curso
+    class TipoAcceso(models.TextChoices):
+        OPEN = 'OPEN', 'Abierto'
+        FREE = 'FREE', 'Gratuito'
+        PREMIUM = 'PREMIUM', 'Premium'
 
     # Campos principales
     id = models.AutoField(primary_key=True, help_text="Identificador único del curso")
@@ -53,6 +59,16 @@ class Curso(models.Model):
         help_text="Estado de publicación del curso"
     )
     notas_privadas = models.TextField(blank=True, null=True, help_text="Anotaciones internas para administradores")
+    
+    # Tipo de acceso al curso
+    features = models.CharField(
+        max_length=50,
+        choices=TipoAcceso.choices,
+        default=TipoAcceso.OPEN,
+        blank=True,
+        null=True,
+        help_text="Tipo de acceso al curso: OPEN, FREE, PREMIUM"
+    )
 
     # Gestión de imágenes
     imagen = models.CharField(max_length=255, blank=True, null=True, help_text="Nombre del archivo de la imagen principal del curso")

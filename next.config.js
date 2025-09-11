@@ -20,6 +20,18 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'electronica.school',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'electronica-school.b-cdn.net',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
