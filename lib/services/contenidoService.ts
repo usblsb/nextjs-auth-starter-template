@@ -536,19 +536,28 @@ export class ContenidoService {
       ]
     }
 
-    // Construir ordenamiento
-    let orderBy: any = [{ fecha_creacion: 'desc' }]
+    // Construir ordenamiento híbrido
+    let orderBy: any
     
     switch (filtros.ordenPor) {
       case 'antiguo':
-        orderBy = [{ fecha_creacion: 'asc' }]
+        // Orden híbrido: orden_manual ASC (nulls last), luego fecha_creacion ASC
+        orderBy = [
+          { orden_manual: { sort: 'asc', nulls: 'last' } },
+          { fecha_creacion: 'asc' }
+        ]
         break
       case 'titulo':
+        // Para título mantener orden alfabético sin orden_manual
         orderBy = [{ titulo: 'asc' }]
         break
       case 'reciente':
       default:
-        orderBy = [{ fecha_creacion: 'desc' }]
+        // Orden híbrido: orden_manual ASC (nulls last), luego fecha_creacion DESC  
+        orderBy = [
+          { orden_manual: { sort: 'asc', nulls: 'last' } },
+          { fecha_creacion: 'desc' }
+        ]
         break
     }
 

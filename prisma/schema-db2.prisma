@@ -33,6 +33,7 @@ model Curso {
   fecha_subida_remota  DateTime? @db2.Timestamptz(6)
   url_remota           String?  @db2.Text
   features             String?  @default("OPEN") @db2.VarChar(50)
+  orden_manual         Int?
 
   // Relaciones
   cursoLecciones CursoLeccion[]

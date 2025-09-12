@@ -32,6 +32,10 @@ class Curso(models.Model):
     meta_titulo = models.CharField(max_length=500, blank=True, null=True, help_text="Título para SEO, aparece en la etiqueta <title>")
     meta_description = models.CharField(max_length=500, blank=True, null=True, help_text="Descripción para SEO, aparece en los resultados de búsqueda")
 
+    orden_manual = db.Column(
+        db.Integer, nullable=True, comment="Orden manual del curso para listados personalizados"
+    )
+
     # Descripciones
     descripcion_corta = models.TextField(blank=True, null=True, help_text="Resumen o entradilla del curso")
     descripcion_larga = models.TextField(blank=True, null=True, help_text="Descripción completa y detallada del curso")
