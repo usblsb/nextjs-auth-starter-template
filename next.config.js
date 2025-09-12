@@ -34,6 +34,16 @@ const nextConfig = {
       },
     ],
   },
+  // Configuración para optimizar Prisma en producción
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', '@prisma/client-db2']
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('@prisma/client', '@prisma/client-db2')
+    }
+    return config
+  }
 };
 
 module.exports = nextConfig;
