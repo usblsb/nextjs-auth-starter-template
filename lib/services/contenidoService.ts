@@ -591,6 +591,18 @@ export class ContenidoService {
   }
 
   /**
+   * Obtiene un curso por su slug - ACCESO ABIERTO (sin restricciones)
+   */
+  async getCursoBySlugAbierto(slug: string): Promise<Curso | null> {
+    return await db2.curso.findUnique({
+      where: { 
+        slug,
+        estado: 'activo'
+      }
+    })
+  }
+
+  /**
    * Obtiene un curso detallado con lecciones por su ID
    */
   async getCursoDetalladoById(id: number, tipoUsuario: TipoUsuario): Promise<CursoDetallado | null> {

@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-// TODO: Temporal - acceso abierto para pruebas
 import { contenidoService } from '@/lib/services'
 import { CursoView } from './components/CursoView'
 import Header from '../../components/layouts/header'
@@ -10,11 +9,8 @@ export default async function CursoPage({
 }: { 
   params: Promise<{ slug: string }>
 }) {
-  // TODO: Temporal - acceso abierto para pruebas
-  const tipoUsuario = 'free' // Temporal para pruebas
-
   const resolvedParams = await params
-  const curso = await contenidoService.getCursoBySlug(resolvedParams.slug, tipoUsuario)
+  const curso = await contenidoService.getCursoBySlugAbierto(resolvedParams.slug)
   
   if (!curso) {
     notFound()
@@ -25,7 +21,7 @@ export default async function CursoPage({
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1">
-          <CursoView curso={curso} tipoUsuario={tipoUsuario} />
+          <CursoView curso={curso} />
         </main>
         <ConditionalFooter />
       </div>
@@ -35,10 +31,8 @@ export default async function CursoPage({
 
 // Meta tags dinámicos
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  // TODO: Temporal - acceso abierto para pruebas
-  const tipoUsuario = 'free' // Temporal para pruebas
   const resolvedParams = await params
-  const curso = await contenidoService.getCursoBySlug(resolvedParams.slug, tipoUsuario)
+  const curso = await contenidoService.getCursoBySlugAbierto(resolvedParams.slug)
 
   if (!curso) {
     return {
