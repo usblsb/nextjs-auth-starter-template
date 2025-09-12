@@ -1,12 +1,12 @@
-// TODO: Temporal - acceso abierto para pruebas
 import { contenidoService } from '@/lib/services'
-import { CursosGrid } from './components/CursosGrid'
+import { userTypeService } from '@/lib/services/userTypeService'
+import { LeccionesGrid } from './components/LeccionesGrid'
 import { SearchAndFilters } from './components/SearchAndFilters'
 import { Pagination } from '../diapositivas/components/Pagination'
 import Header from '../components/layouts/header'
 import Footer from '../components/layouts/footer'
 
-export default async function CursosPage({ 
+export default async function LeccionesPage({ 
   searchParams 
 }: { 
   searchParams: Promise<{ 
@@ -16,14 +16,14 @@ export default async function CursosPage({
     tipo?: string
   }>
 }) {
-  // TODO: Temporal - acceso abierto para pruebas
-  const tipoUsuario = 'free' // Temporal para pruebas
+  // Obtener tipo de usuario actual (integrado con Clerk + Stripe)
+  const tipoUsuario = await userTypeService.getTipoUsuarioActual()
 
   const params = await searchParams
   const page = Number(params.page) || 1
   const limit = 12
 
-  const cursosData = await contenidoService.getCursosPaginados(
+  const leccionesData = await contenidoService.getLeccionesPaginados(
     page, 
     limit, 
     tipoUsuario,
@@ -41,17 +41,17 @@ export default async function CursosPage({
         <main className="flex-1">
           <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Cursos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Lecciones</h1>
         <p className="text-muted-foreground mt-2">
-          Explora nuestra colección de cursos educativos
+          Explora nuestra colección de lecciones educativas
         </p>
       </div>
 
       <SearchAndFilters />
       
-      {cursosData.total > 0 && (
+      {leccionesData.total > 0 && (
         <div className="mb-6 text-sm text-muted-foreground">
-          Mostrando {((page - 1) * limit) + 1} - {Math.min(page * limit, cursosData.total)} de {cursosData.total} cursos
+          Mostrando {((page - 1) * limit) + 1} - {Math.min(page * limit, leccionesData.total)} de {leccionesData.total} lecciones
           {params.q && (
             <span className="ml-2">
               para &ldquo;{params.q}&rdquo;
@@ -65,17 +65,17 @@ export default async function CursosPage({
         </div>
       )}
 
-      <CursosGrid 
-        cursos={cursosData.data}
-        isEmpty={cursosData.total === 0}
+      <LeccionesGrid 
+        lecciones={leccionesData.data}
+        isEmpty={leccionesData.total === 0}
       />
 
       <Pagination
-        currentPage={cursosData.currentPage}
-        totalPages={cursosData.totalPages}
-        basePath="/cursos"
-        hasNext={cursosData.hasNext}
-        hasPrev={cursosData.hasPrev}
+        currentPage={leccionesData.currentPage}
+        totalPages={leccionesData.totalPages}
+        basePath="/lecciones"
+        hasNext={leccionesData.hasNext}
+        hasPrev={leccionesData.hasPrev}
         searchParams={{
           ...(params.q && { q: params.q }),
           ...(params.orden && params.orden !== 'reciente' && { orden: params.orden }),
@@ -91,7 +91,7 @@ export default async function CursosPage({
 }
 
 export const metadata = {
-  title: 'Cursos - Electrónica Escuela',
-  description: 'Explora nuestra colección de cursos educativos sobre electrónica y conceptos técnicos.',
+  title: 'Lecciones - Electrónica Escuela',
+  description: 'Explora nuestra colección de lecciones educativas sobre electrónica y conceptos técnicos.',
   robots: 'index, follow, noarchive, nosnippet, notranslate',
 }

@@ -3,10 +3,10 @@ import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import Link from "next/link"
 import { Globe, Shield, Lock } from "lucide-react"
-import type { Curso } from '@prisma/client-db2'
+import type { Leccion } from '@prisma/client-db2'
 
-interface CursoCardProps {
-  curso: Curso
+interface LeccionCardProps {
+  leccion: Leccion
 }
 
 function AccessBadge({ features }: { features: string }) {
@@ -37,15 +37,15 @@ function AccessBadge({ features }: { features: string }) {
   }
 }
 
-export function CursoCard({ curso }: CursoCardProps) {
+export function LeccionCard({ leccion }: LeccionCardProps) {
   return (
-    <Link href={`/cursos/${curso.slug}`} className="h-full">
+    <Link href={`/lecciones/${leccion.slug}`} className="h-full">
       <Card className="group hover:shadow-lg transition-all duration-200 overflow-hidden h-full flex flex-col p-0">
         <div className="aspect-video relative overflow-hidden">
-          {curso.url_remota ? (
+          {leccion.url_remota ? (
             <Image
-              src={curso.url_remota}
-              alt={curso.titulo}
+              src={leccion.url_remota}
+              alt={leccion.titulo}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -55,31 +55,30 @@ export function CursoCard({ curso }: CursoCardProps) {
               <div className="text-muted-foreground text-sm">Sin imagen</div>
             </div>
           )}
-          
         </div>
         
         <CardContent className="p-4 flex-1 flex flex-col">
           <h3 className="font-semibold text-base line-clamp-2 group-hover:text-primary transition-colors mb-2">
-            {curso.titulo}
+            {leccion.titulo}
           </h3>
           
-          {curso.descripcion_corta && (
+          {leccion.descripcion_corta && (
             <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-              {curso.descripcion_corta.replace(/<[^>]*>/g, '')} {/* Remove HTML tags */}
+              {leccion.descripcion_corta.replace(/<[^>]*>/g, '')} {/* Remove HTML tags */}
             </p>
           )}
           
           <div className="flex items-center justify-between text-xs text-muted-foreground mt-auto">
             <span>
-              {new Date(curso.fecha_creacion).toLocaleDateString('es-ES', {
+              {new Date(leccion.fecha_creacion).toLocaleDateString('es-ES', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'
               })}
             </span>
             
-            <div role="status" aria-label={`Tipo de acceso: ${curso.features || 'OPEN'}`}>
-              <AccessBadge features={curso.features || 'OPEN'} />
+            <div role="status" aria-label={`Tipo de acceso: ${(leccion as any).features || 'OPEN'}`}>
+              <AccessBadge features={(leccion as any).features || 'OPEN'} />
             </div>
           </div>
         </CardContent>

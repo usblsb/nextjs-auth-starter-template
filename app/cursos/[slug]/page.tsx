@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 // TODO: Temporal - acceso abierto para pruebas
 import { contenidoService } from '@/lib/services'
 import { CursoView } from './components/CursoView'
+import Header from '../../components/layouts/header'
+import { ConditionalFooter } from '../../components/ConditionalFooter'
 
 export default async function CursoPage({ 
   params 
@@ -18,7 +20,17 @@ export default async function CursoPage({
     notFound()
   }
 
-  return <CursoView curso={curso} tipoUsuario={tipoUsuario} />
+  return (
+    <>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1">
+          <CursoView curso={curso} tipoUsuario={tipoUsuario} />
+        </main>
+        <ConditionalFooter />
+      </div>
+    </>
+  )
 }
 
 // Meta tags dinámicos

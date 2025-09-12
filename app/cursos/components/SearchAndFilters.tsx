@@ -153,7 +153,7 @@ export function SearchAndFilters() {
           <span>Filtros activos:</span>
           {busqueda.trim() && (
             <span className="bg-muted px-2 py-1 rounded text-xs">
-              Búsqueda: "{busqueda}"
+              Búsqueda: &ldquo;{busqueda}&rdquo;
             </span>
           )}
           {features && (

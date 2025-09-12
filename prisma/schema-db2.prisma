@@ -62,6 +62,7 @@ model Leccion {
   en_remoto            Boolean?
   fecha_subida_remota  DateTime? @db2.Timestamptz(6)
   url_remota           String?  @db2.VarChar(255)
+  features             String?  @default("OPEN") @db2.VarChar(50)
 
   // Relaciones
   cursoLecciones       CursoLeccion[]

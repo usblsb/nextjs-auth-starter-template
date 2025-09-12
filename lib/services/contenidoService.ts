@@ -659,6 +659,278 @@ export class ContenidoService {
       }))
     }
   }
+
+  // ===================== MÉTODOS PARA LECCIONES =====================
+
+  /**
+   * Construye la cláusula WHERE para lecciones según el tipo de usuario y features
+   */
+  private buildLeccionWhereClauseWithFeatures(tipoUsuario: TipoUsuario, features?: string) {
+    const baseClause = {
+      estado: 'activo'
+    }
+
+    // Si no se especifica features, mostrar según tipo de usuario
+    if (!features) {
+      return baseClause
+    }
+
+    return {
+      ...baseClause,
+      features
+    }
+  }
+
+  /**
+   * Determina qué contenido mostrar según usuario y features de la lección
+   * Con manejo robusto de casos edge
+   */
+  getContenidoLeccion(leccion: Leccion, tipoUsuario: TipoUsuario): {
+    contenido: string
+    tieneAcceso: boolean
+    mensaje?: string
+  } {
+    // Validar entrada
+    if (!leccion) {
+      console.error('getContenidoLeccion: leccion is null or undefined')
+      return {
+        contenido: '',
+        tieneAcceso: false,
+        mensaje: 'Error: Lección no encontrada'
+      }
+    }
+
+    // Normalizar features con fallback robusto
+    const features = ((leccion as any).features || 'OPEN').toUpperCase()
+    const validFeatures = ['OPEN', 'FREE', 'PREMIUM']
+    const normalizedFeatures = validFeatures.includes(features) ? features : 'OPEN'
+
+    // Normalizar tipo de usuario
+    const validTipos = ['publico', 'free', 'premium']
+    const normalizedTipoUsuario = validTipos.includes(tipoUsuario) ? tipoUsuario : 'publico'
+
+    // Usuario sin login (PÚBLICO)
+    if (normalizedTipoUsuario === 'publico') {
+      const contenidoPublico = leccion.contenido_publico || ''
+      
+      // Si no hay contenido público, mostrar mensaje de error
+      if (!contenidoPublico.trim()) {
+        return {
+          contenido: '<p>Este contenido no está disponible temporalmente.</p>',
+          tieneAcceso: false,
+          mensaje: 'Regístrate para acceder a más contenido'
+        }
+      }
+
+      return {
+        contenido: contenidoPublico,
+        tieneAcceso: true,
+        mensaje: 'Regístrate para ver más'
+      }
+    }
+
+    // Usuario con login FREE (nunca ha pagado)
+    if (normalizedTipoUsuario === 'free') {
+      switch (normalizedFeatures) {
+        case 'OPEN':
+        case 'FREE':
+          const contenidoPrivado = leccion.contenido_privado || leccion.contenido_publico || ''
+          
+          if (!contenidoPrivado.trim()) {
+            return {
+              contenido: '<p>Este contenido no está disponible temporalmente.</p>',
+              tieneAcceso: false,
+              mensaje: 'Contenido en preparación'
+            }
+          }
+          
+          return {
+            contenido: contenidoPrivado,
+            tieneAcceso: true
+          }
+        case 'PREMIUM':
+          return {
+            contenido: leccion.contenido_publico || '<p>Contenido premium disponible con suscripción.</p>',
+            tieneAcceso: false,
+            mensaje: 'Actualiza a Premium para ver más'
+          }
+        default:
+          console.warn(`getContenidoLeccion: features desconocido "${features}" para usuario free`)
+          return {
+            contenido: leccion.contenido_publico || '',
+            tieneAcceso: false,
+            mensaje: 'Tipo de contenido no reconocido'
+          }
+      }
+    }
+
+    // Usuario PREMIUM ACTIVO
+    if (normalizedTipoUsuario === 'premium') {
+      const contenidoCompleto = leccion.contenido_privado || leccion.contenido_publico || ''
+      
+      if (!contenidoCompleto.trim()) {
+        return {
+          contenido: '<p>Este contenido premium no está disponible temporalmente.</p>',
+          tieneAcceso: true,
+          mensaje: 'Contenido en preparación'
+        }
+      }
+      
+      return {
+        contenido: contenidoCompleto,
+        tieneAcceso: true
+      }
+    }
+
+    // Fallback para tipos de usuario no reconocidos
+    console.error(`getContenidoLeccion: tipoUsuario desconocido "${tipoUsuario}"`)
+    return {
+      contenido: leccion.contenido_publico || '<p>Error en la configuración del contenido.</p>',
+      tieneAcceso: false,
+      mensaje: 'Error de configuración. Contacta con soporte.'
+    }
+  }
+
+  /**
+   * Obtiene lecciones con paginación y filtros
+   */
+  async getLeccionesPaginados(
+    page: number = 1,
+    limit: number = 12,
+    tipoUsuario: TipoUsuario,
+    filtros: {
+      busqueda?: string
+      ordenPor?: 'reciente' | 'antiguo' | 'titulo'
+      features?: string
+    } = {}
+  ): Promise<{
+    data: Leccion[]
+    total: number
+    totalPages: number
+    currentPage: number
+    hasNext: boolean
+    hasPrev: boolean
+  }> {
+    const offset = (page - 1) * limit
+
+    // Construir filtros WHERE
+    const whereClause: any = this.buildLeccionWhereClauseWithFeatures(tipoUsuario, filtros.features)
+
+    // Agregar búsqueda si existe
+    if (filtros.busqueda && filtros.busqueda.trim()) {
+      whereClause.OR = [
+        { titulo: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { descripcion_corta: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { contenido_publico: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } },
+        { meta_description: { contains: filtros.busqueda.trim(), mode: 'insensitive' as const } }
+      ]
+    }
+
+    // Construir ordenamiento
+    let orderBy: any = [{ fecha_creacion: 'desc' }]
+    
+    switch (filtros.ordenPor) {
+      case 'antiguo':
+        orderBy = [{ fecha_creacion: 'asc' }]
+        break
+      case 'titulo':
+        orderBy = [{ titulo: 'asc' }]
+        break
+      case 'reciente':
+      default:
+        orderBy = [{ fecha_creacion: 'desc' }]
+        break
+    }
+
+    const [lecciones, total] = await Promise.all([
+      db2.leccion.findMany({
+        where: whereClause,
+        orderBy,
+        skip: offset,
+        take: limit
+      }),
+      db2.leccion.count({
+        where: whereClause
+      })
+    ])
+
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      data: lecciones,
+      total,
+      totalPages,
+      currentPage: page,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    }
+  }
+
+  /**
+   * Obtiene una lección por su slug (actualizado para features)
+   */
+  async getLeccionBySlugWithFeatures(slug: string, tipoUsuario: TipoUsuario): Promise<Leccion | null> {
+    const whereClause = this.buildLeccionWhereClauseWithFeatures(tipoUsuario)
+    
+    return await db2.leccion.findUnique({
+      where: { 
+        slug,
+        ...whereClause
+      }
+    })
+  }
+
+  /**
+   * Busca lecciones por término de búsqueda
+   */
+  async buscarLecciones(termino: string, tipoUsuario: TipoUsuario): Promise<Leccion[]> {
+    const whereClause = this.buildLeccionWhereClauseWithFeatures(tipoUsuario)
+
+    return await db2.leccion.findMany({
+      where: {
+        ...whereClause,
+        OR: [
+          { titulo: { contains: termino, mode: 'insensitive' as const } },
+          { descripcion_corta: { contains: termino, mode: 'insensitive' as const } },
+          { contenido_publico: { contains: termino, mode: 'insensitive' as const } },
+          { meta_description: { contains: termino, mode: 'insensitive' as const } }
+        ]
+      },
+      take: 10,
+      orderBy: [{ fecha_creacion: 'desc' }]
+    })
+  }
+
+  /**
+   * Obtiene estadísticas de lecciones
+   */
+  async getEstadisticasLecciones(tipoUsuario: TipoUsuario): Promise<{
+    totalLecciones: number
+    leccionesPorFeatures: { features: string, count: number }[]
+  }> {
+    const whereClause = this.buildLeccionWhereClauseWithFeatures(tipoUsuario)
+
+    const [totalLecciones, leccionesPorFeatures] = await Promise.all([
+      db2.leccion.count({ where: whereClause }),
+      // Temporalmente omitir groupBy hasta que el campo features esté disponible
+      Promise.resolve([])
+      /*
+      db2.leccion.groupBy({
+        by: ['features'],
+        where: whereClause,
+        _count: { id: true }
+      })
+      */
+    ])
+
+    return {
+      totalLecciones,
+      leccionesPorFeatures: leccionesPorFeatures.map(item => ({
+        features: 'OPEN',
+        count: 0
+      }))
+    }
+  }
 }
 
 // Instancia singleton del servicio

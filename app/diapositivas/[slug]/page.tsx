@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 // import { contenidoService, userTypeService } from '@/lib/services'
 import { contenidoService } from '@/lib/services'
 import Image from 'next/image'
+import Header from '../../components/layouts/header'
+import { ConditionalFooter } from '../../components/ConditionalFooter'
 
 export default async function DiapositivaPage({ 
   params 
@@ -24,7 +26,11 @@ export default async function DiapositivaPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1">
+          <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Imagen principal */}
       {diapositiva.url_remota && (
         <div className="mb-8">
@@ -51,7 +57,11 @@ export default async function DiapositivaPage({
           dangerouslySetInnerHTML={{ __html: diapositiva.contenido }}
         />
       )}
-    </div>
+          </div>
+        </main>
+        <ConditionalFooter />
+      </div>
+    </>
   )
 }
 
