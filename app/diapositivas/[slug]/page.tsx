@@ -5,6 +5,7 @@ import { contenidoService } from '@/lib/services'
 import Image from 'next/image'
 import Header from '../../components/layouts/header'
 import { ConditionalFooter } from '../../components/ConditionalFooter'
+import '@/styles/pages-contenido.css'
 
 export default async function DiapositivaPage({ 
   params 
@@ -53,7 +54,7 @@ export default async function DiapositivaPage({
       {/* Contenido HTML */}
       {diapositiva.contenido && (
         <div 
-          className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+          className="contenido-html-raw prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
           dangerouslySetInnerHTML={{ __html: diapositiva.contenido }}
         />
       )}
