@@ -16,12 +16,15 @@ export default async function CursoPage({
     notFound()
   }
 
+  // Obtener lecciones del curso
+  const lecciones = await contenidoService.getLeccionesByCursoId(curso.id)
+
   return (
     <>
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1">
-          <CursoView curso={curso} />
+          <CursoView curso={curso} lecciones={lecciones} />
         </main>
         <ConditionalFooter />
       </div>

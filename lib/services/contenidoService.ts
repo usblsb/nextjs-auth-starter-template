@@ -603,6 +603,47 @@ export class ContenidoService {
   }
 
   /**
+   * Obtiene las lecciones de un curso por su ID - ACCESO ABIERTO
+   * Incluye el índice de ordenamiento desde la tabla de relación
+   */
+  async getLeccionesByCursoId(cursoId: number): Promise<Array<{
+    id: number
+    titulo: string
+    descripcion_corta: string | null
+    slug: string | null
+    fecha_creacion: Date
+    indice: number
+  }>> {
+    const result = await db2.cursoLeccion.findMany({
+      where: {
+        curso_id: cursoId,
+        leccion: {
+          estado: 'activo'
+        }
+      },
+      include: {
+        leccion: {
+          select: {
+            id: true,
+            titulo: true,
+            descripcion_corta: true,
+            slug: true,
+            fecha_creacion: true
+          }
+        }
+      },
+      orderBy: {
+        indice: 'asc'
+      }
+    })
+
+    return result.map(item => ({
+      ...item.leccion,
+      indice: item.indice
+    }))
+  }
+
+  /**
    * Obtiene un curso detallado con lecciones por su ID
    */
   async getCursoDetalladoById(id: number, tipoUsuario: TipoUsuario): Promise<CursoDetallado | null> {
