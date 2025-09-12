@@ -1,16 +1,27 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Shield, Lock, Globe } from 'lucide-react'
+import { Shield, Lock, Globe, BookOpen } from 'lucide-react'
 import { contenidoService } from '@/lib/services'
 import type { Leccion } from '@prisma/client-db2'
 import type { TipoUsuario } from '@/lib/services'
+import '@/styles/pages-contenido.css'
+
+interface LeccionHermana {
+  id: number
+  titulo: string
+  slug: string | null
+  indice: number
+  es_leccion_actual: boolean
+  curso_id: number
+}
 
 interface LeccionViewProps {
   leccion: Leccion
   tipoUsuario: TipoUsuario
+  leccionesHermanas: LeccionHermana[]
 }
 
 function AccessBadge({ features }: { features: string }) {
@@ -49,7 +60,7 @@ function ContentByPermission({ leccion, tipoUsuario }: { leccion: Leccion, tipoU
       {/* Contenido principal */}
       {contenido && (
         <div 
-          className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+          className="contenido-html-raw prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
           dangerouslySetInnerHTML={{ __html: contenido }}
         />
       )}
@@ -122,7 +133,7 @@ function ContentByPermission({ leccion, tipoUsuario }: { leccion: Leccion, tipoU
   )
 }
 
-export function LeccionView({ leccion, tipoUsuario }: LeccionViewProps) {
+export function LeccionView({ leccion, tipoUsuario, leccionesHermanas }: LeccionViewProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Imagen principal */}
@@ -193,7 +204,68 @@ export function LeccionView({ leccion, tipoUsuario }: LeccionViewProps) {
       </div>
 
       {/* Contenido condicional según permisos */}
-      <ContentByPermission leccion={leccion} tipoUsuario={tipoUsuario} />
+      <div className="mb-12">
+        <ContentByPermission leccion={leccion} tipoUsuario={tipoUsuario} />
+      </div>
+
+      {/* Listado de lecciones hermanas */}
+      {leccionesHermanas.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+            <BookOpen className="h-6 w-6" />
+            Listado de las lecciones
+          </h3>
+          
+          <div className="grid gap-3">
+            {leccionesHermanas.map((leccionHermana) => {
+              const cardContent = (
+                <CardHeader className="py-3 px-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className={`font-semibold text-base flex-1 ${leccionHermana.es_leccion_actual ? 'text-primary' : 'text-foreground'}`}>
+                      <h3>{leccionHermana.titulo}</h3>
+                    </div>
+                    <Badge 
+                      variant={leccionHermana.es_leccion_actual ? 'default' : 'secondary'}
+                      className="flex-shrink-0 min-w-[2rem] justify-center"
+                    >
+                      {leccionHermana.indice}
+                    </Badge>
+                  </div>
+                </CardHeader>
+              )
+
+              // Si es la lección actual o no tiene slug, renderizar como div
+              if (leccionHermana.es_leccion_actual || !leccionHermana.slug) {
+                return (
+                  <Card 
+                    key={leccionHermana.id} 
+                    className={`transition-all duration-200 ${
+                      leccionHermana.es_leccion_actual 
+                        ? 'border-primary bg-primary/5 shadow-sm' 
+                        : 'hover:shadow-md hover:border-muted-foreground/20'
+                    }`}
+                  >
+                    {cardContent}
+                  </Card>
+                )
+              }
+
+              // Si no es la lección actual y tiene slug, renderizar como enlace
+              return (
+                <Link 
+                  key={leccionHermana.id}
+                  href={`/lecciones/${leccionHermana.slug}`}
+                  className="block"
+                >
+                  <Card className="transition-all duration-200 hover:shadow-md hover:border-muted-foreground/20 hover:text-primary">
+                    {cardContent}
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

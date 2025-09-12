@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { CalendarDays, BookOpen } from 'lucide-react'
 import type { Curso } from '@prisma/client-db2'
+import '@/styles/pages-contenido.css'
 
 interface Leccion {
   id: number
@@ -47,17 +48,17 @@ export function CursoView({ curso, lecciones }: CursoViewProps) {
       <div className="mb-12">
         {curso.contenido_privado ? (
           <div 
-            className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+            className="contenido-html-raw prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
             dangerouslySetInnerHTML={{ __html: curso.contenido_privado }}
           />
         ) : curso.contenido ? (
           <div 
-            className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+            className="contenido-html-raw prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
             dangerouslySetInnerHTML={{ __html: curso.contenido }}
           />
         ) : curso.contenido_publico ? (
           <div 
-            className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
+            className="contenido-html-raw prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground"
             dangerouslySetInnerHTML={{ __html: curso.contenido_publico }}
           />
         ) : (

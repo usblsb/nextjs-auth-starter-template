@@ -1,0 +1,155 @@
+/* Estilos específicos solo para páginas individuales del curso, leccion y
+diapositiva para aplicar sobre el contenido privado o publico en formato html RAW - Con soporte modo claro/oscuro */
+
+/* Aplicar estilos solo dentro del contenedor de contenido HTML raw */
+.contenido-html-raw h1 {
+	font-size: 2.25rem;
+	font-weight: 700;
+	color: var(--color-foreground);
+	letter-spacing: -0.025em;
+	text-align: center;
+	line-height: 1;
+}
+
+@media (min-width: 640px) {
+	.contenido-html-raw h1 {
+		font-size: 3rem;
+	}
+}
+
+@media (min-width: 768px) {
+	.contenido-html-raw h1 {
+		font-size: 3.75rem;
+	}
+}
+
+/* Subtítulos */
+.contenido-html-raw h2 {
+	font-size: 1.5rem;
+	font-weight: 600;
+	color: var(--color-foreground);
+	margin-top: 1.5rem;
+	margin-bottom: 0.75rem;
+	line-height: 1.25;
+}
+
+.contenido-html-raw h3 {
+	font-size: 1.25rem;
+	font-weight: 500;
+	color: var(--color-foreground);
+	margin-top: 1rem;
+	margin-bottom: 0.5rem;
+	line-height: 1.375;
+}
+
+.contenido-html-raw h4 {
+	font-size: 1.125rem;
+	font-weight: 500;
+	color: var(--color-foreground);
+	margin-top: 0.75rem;
+	margin-bottom: 0.5rem;
+	line-height: 1.5;
+}
+
+/* Texto de párrafos */
+.contenido-html-raw p {
+	color: var(--color-muted-foreground);
+	line-height: 1.75;
+	margin-bottom: 1rem;
+}
+
+/* Listas */
+.contenido-html-raw ul,
+.contenido-html-raw ol {
+	margin-left: 1.5rem;
+	margin-bottom: 1rem;
+	color: var(--color-muted-foreground);
+}
+
+.contenido-html-raw ul > li + li,
+.contenido-html-raw ol > li + li {
+	margin-top: 0.5rem;
+}
+
+.contenido-html-raw li {
+	color: var(--color-muted-foreground);
+	line-height: 1.6;
+}
+
+/* Elementos de énfasis */
+.contenido-html-raw em {
+	color: var(--color-foreground);
+	font-style: italic;
+}
+
+.contenido-html-raw strong,
+.contenido-html-raw b {
+	color: var(--color-foreground);
+	font-weight: 600;
+}
+
+/* Separadores */
+.contenido-html-raw hr {
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+	border-color: var(--color-border);
+}
+
+/* Enlaces dentro del contenido */
+.contenido-html-raw a {
+	color: var(--color-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.contenido-html-raw a:hover {
+	color: var(--color-primary);
+	opacity: 0.8;
+}
+
+/* Código inline */
+.contenido-html-raw code {
+	background-color: var(--color-muted);
+	color: var(--color-foreground);
+	padding: 0.125rem 0.25rem;
+	border-radius: 0.25rem;
+	font-size: 0.875em;
+	font-family: var(--font-mono);
+}
+
+/* Blockquotes */
+.contenido-html-raw blockquote {
+	border-left: 4px solid var(--color-border);
+	padding-left: 1rem;
+	margin: 1rem 0;
+	color: var(--color-muted-foreground);
+	font-style: italic;
+}
+
+/* Tablas */
+.contenido-html-raw table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1rem 0;
+}
+
+.contenido-html-raw th,
+.contenido-html-raw td {
+	border: 1px solid var(--color-border);
+	padding: 0.5rem;
+	text-align: left;
+}
+
+.contenido-html-raw th {
+	background-color: var(--color-muted);
+	color: var(--color-foreground);
+	font-weight: 600;
+}
+
+.contenido-html-raw td {
+	color: var(--color-muted-foreground);
+}
+
+.contenido-html-raw br {
+	margin-bottom: 0.5rem;
+}

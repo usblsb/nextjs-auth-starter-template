@@ -20,12 +20,19 @@ export default async function LeccionPage({
     notFound()
   }
 
+  // Obtener lecciones hermanas (del mismo curso)
+  const leccionesHermanas = await contenidoService.getLeccionesHermanasByLeccionId(leccion.id)
+
   return (
     <>
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1">
-          <LeccionView leccion={leccion} tipoUsuario={tipoUsuario} />
+          <LeccionView 
+            leccion={leccion} 
+            tipoUsuario={tipoUsuario}
+            leccionesHermanas={leccionesHermanas} 
+          />
         </main>
         <ConditionalFooter />
       </div>

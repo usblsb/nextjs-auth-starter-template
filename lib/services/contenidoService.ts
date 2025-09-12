@@ -644,6 +644,62 @@ export class ContenidoService {
   }
 
   /**
+   * Obtiene las lecciones hermanas de una lección específica (lecciones del mismo curso)
+   * Incluye marcador de cuál es la lección actual
+   */
+  async getLeccionesHermanasByLeccionId(leccionId: number): Promise<Array<{
+    id: number
+    titulo: string
+    slug: string | null
+    indice: number
+    es_leccion_actual: boolean
+    curso_id: number
+  }>> {
+    // Paso 1: Encontrar el curso de la lección actual
+    const cursoRelacion = await db2.cursoLeccion.findFirst({
+      where: {
+        leccion_id: leccionId
+      },
+      select: {
+        curso_id: true
+      }
+    })
+
+    if (!cursoRelacion) {
+      return [] // No pertenece a ningún curso
+    }
+
+    // Paso 2: Obtener todas las lecciones del curso encontrado
+    const result = await db2.cursoLeccion.findMany({
+      where: {
+        curso_id: cursoRelacion.curso_id,
+        leccion: {
+          estado: 'activo'
+        }
+      },
+      include: {
+        leccion: {
+          select: {
+            id: true,
+            titulo: true,
+            slug: true
+          }
+        }
+      },
+      orderBy: {
+        indice: 'asc'
+      }
+    })
+
+    return result.map(item => ({
+      ...item.leccion,
+      indice: item.indice,
+      es_leccion_actual: item.leccion.id === leccionId,
+      curso_id: cursoRelacion.curso_id
+    }))
+  }
+
+  /**
    * Obtiene un curso detallado con lecciones por su ID
    */
   async getCursoDetalladoById(id: number, tipoUsuario: TipoUsuario): Promise<CursoDetallado | null> {
