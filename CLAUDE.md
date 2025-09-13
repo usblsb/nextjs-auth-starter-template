@@ -4,21 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Next.js 15 application with Clerk authentication, built as an online
-electronics education platform. The project uses TypeScript, Tailwind CSS 4,
-Stripe, and Prisma with PostgreSQL 17.
+This is a Next.js 15 application with Clerk authentication, built as an online electronics education platform. It uses TypeScript, Tailwind CSS 4, Stripe, and Prisma with PostgreSQL 17, working with two databases: DB1 (read and write, for design, user management, and payments in this Next.js app) and DB2 (read-only, containing courses, lessons, and slides managed from an external Python platform).
 
 ## Project explication
 
-The project consists of two PostgreSQL databases hosted on NEON.COM.
+The project consists of two PostgreSQL 17 databases hosted on NEON.COM.
 
-The database [DB1], which is used in this APP, stores user data, log records, payments, and subscriptions, all obtained from CLERK and STRIPE.
-The database [DB2] stores slides, lessons, and courses content and is read-only.
+The [DB1] database, with read and write access, is used in this APP and stores user data, log records, payments, and subscriptions, all obtained from CLERK and STRIPE.
+The [DB2] database stores the content of slides, lessons, and courses, and is read-only.
 
-This project displays content from database [DB2]. Depending on the user status, more or less content is shown, for example:
+This project displays content from the external read-only [DB2] database. Depending on the user status, more or less content is shown, for example:
 • Users without login: see the OPEN content of the academy (GOOGLE ONLY SEES THIS CONTENT).
-• FREE users: see the OPEN content and the FREE content.
-• PREMIUM users: see the FREE and PREMIUM content.
+• FREE users: see the OPEN content and the protected FREE content.
+• PREMIUM users: see the protected FREE content and the protected PREMIUM content.
 
 ## Key Technologies
 
@@ -90,7 +88,7 @@ Required environment variables (see `.env.example`):
 
 - `CLERK_SECRET_KEY` and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk authentication
 - `CLERK_WEBHOOK_SECRET` - For webhook signature validation
-- `DB1_DATABASE_URL` - PostgreSQL connection string
+- `DB1_DATABASE_URL` - PostgreSQL 17 connection string
 - Database connection variables for Neon.com integration
 
 ## Development Guidelines
@@ -148,3 +146,10 @@ entra en Clerk Dashboard --> pega URL en webhook con esta terminacion (/api/webh
 haz login/logout en frontend -->
 verifica en terminal de ngrok que llega POST -->
 si 200 OK --> NEON guarda log de login/logout en la tabla de registro de LOGS.
+
+## For solving problems, major changes, or large designs:
+
+- You must write a task document in Markdown format at the root of the project (todo-_TASK-NAME_.md).
+- Add, complete, remove, and list tasks with clear numbering.
+- Do not include dates or times in the document.
+- Provide interactive feedback to the user after each action and handle errors.

@@ -109,5 +109,37 @@
 	"ai-ignore.showSelectionMenu": true,
 	"ai-ignore.allowMultipleSelection": true,
 	"ai-ignore.createDirectories": true,
-	"ai-ignore.showConfirmation": true
+	"ai-ignore.showConfirmation": true,
+	"workbench.colorCustomizations": {
+		"activityBar.activeBackground": "#0340da",
+		"activityBar.background": "#0340da",
+		"activityBar.foreground": "#e7e7e7",
+		"activityBar.inactiveForeground": "#e7e7e799",
+		"activityBarBadge.background": "#fc2360",
+		"activityBarBadge.foreground": "#e7e7e7",
+		"commandCenter.border": "#e7e7e799",
+		"sash.hoverBorder": "#0340da",
+		"statusBar.background": "#0231a8",
+		"statusBar.foreground": "#e7e7e7",
+		"statusBarItem.hoverBackground": "#0340da",
+		"statusBarItem.remoteBackground": "#0231a8",
+		"statusBarItem.remoteForeground": "#e7e7e7",
+		"titleBar.activeBackground": "#0231a8",
+		"titleBar.activeForeground": "#e7e7e7",
+		"titleBar.inactiveBackground": "#0231a899",
+		"titleBar.inactiveForeground": "#e7e7e799"
+	},
+	"peacock.color": "#0231a8",
+	"markdownlint.config": {
+		"MD013": false,
+		"MD033": false,
+		"MD041": false,
+		"MD045": false,
+		"MD046": false,
+		"MD024": false,
+		"MD025": false,
+		"MD026": false,
+		"MD029": false,
+		"MD040": false
+	}
 }
